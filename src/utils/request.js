@@ -18,7 +18,7 @@ service.interceptors.request.use(
     if (store.getters.token) {
       // let each request carry token --['X-Token'] as a custom key.
       // please modify it according to the actual situation.
-      config.headers['X-Token'] = getToken()
+      config.headers['Authorization'] = getToken()
     }
     return config
   },
@@ -45,7 +45,7 @@ service.interceptors.response.use(
     const res = response.data
 
     // if the custom code is not 20000, it is judged as an error.
-    if (res.code !== 20000) {
+    if (res.status !== 'success') {
       Message({
         message: res.message || 'error',
         type: 'error',
