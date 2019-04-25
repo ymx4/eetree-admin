@@ -382,6 +382,12 @@ export const asyncRoutes = [
   { path: '*', redirect: '/404', hidden: true }
 ]
 
+export const mapRoutes = {
+  Layout: Layout,
+  adminuser_index: () => import('@/views/adminuser/index'),
+  permission_index: () => import('@/views/permission/index')
+}
+
 const createRouter = () => new Router({
   // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
