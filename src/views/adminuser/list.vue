@@ -1,0 +1,182 @@
+<template>
+  <div class="app-container">
+    <el-button type="primary" @click="handleAddUser">
+      添加用户
+    </el-button>
+
+    <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
+      <el-table-column align="center" label="用户名" width="220">
+        <template slot-scope="scope">
+          {{ scope.row.name }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="创建时间" width="220">
+        <template slot-scope="scope">
+          {{ scope.row.created_at }}
+        </template>
+      </el-table-column>
+      <el-table-column align="header-center" label="角色">
+        <template slot-scope="scope">
+          {{ scope.row.roleStr }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="Operations">
+        <template slot-scope="scope">
+          <el-button type="primary" size="small" @click="handleEdit(scope)">
+            编辑
+          </el-button>
+          <el-button v-if="scope.row.id != 1" type="danger" size="small" @click="handleDelete(scope)">
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'添加'">
+      <el-form :model="user" label-width="80px" label-position="left">
+        <el-form-item label="用户名">
+          <el-input v-model="user.name" placeholder="用户名" />
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model="user.password" placeholder="密码" />
+          <div v-if="dialogType==='edit'" class="sub-title" style="color:#E6A23C;">留空则不修改密码</div>
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-checkbox-group v-model="checkedRoles">
+            <el-checkbox v-for="role in rolesData" :key="role.id" :label="role.id">{{ role.name }}</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="dialogVisible=false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="confirmSubmit">
+          提交
+        </el-button>
+      </div>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { arrPluck, deepClone } from '@/utils'
+import { getUsers, addUser, deleteUser, updateUser } from '@/api/adminuser'
+import { getRoles } from '@/api/role'
+
+const defaultUser = {
+  name: '',
+  password: '',
+  roles: []
+}
+
+export default {
+  data() {
+    return {
+      listLoading: true,
+      user: Object.assign({}, defaultUser),
+      roles: [],
+      list: [],
+      dialogVisible: false,
+      dialogType: 'new',
+      checkedRoles: []
+    }
+  },
+  computed: {
+    rolesData() {
+      return this.roles
+    }
+  },
+  created() {
+    this.getRoles()
+    this.getUsers()
+  },
+  methods: {
+    async getRoles() {
+      const res = await getRoles()
+      this.roles = res.data
+    },
+    async getUsers() {
+      this.listLoading = true
+      const res = await getUsers()
+      this.list = this.handleUserList(res.data)
+      this.listLoading = false
+    },
+    handleUserList(list) {
+      list.forEach(element => {
+        let roleStr = ''
+        if (element.roles.length > 0) {
+          const roleName = arrPluck(element.roles, 'name')
+          roleStr = roleName.join(',')
+        }
+        element.roleStr = roleStr
+      })
+      return list
+    },
+    handleAddUser() {
+      this.user = Object.assign({}, defaultUser)
+      this.checkedRoles = []
+      this.dialogType = 'new'
+      this.dialogVisible = true
+    },
+    handleEdit(scope) {
+      this.dialogType = 'edit'
+      this.dialogVisible = true
+      this.user = deepClone(scope.row)
+      this.checkedRoles = []
+      this.$nextTick(() => {
+        this.user.roles.forEach(element => {
+          this.checkedRoles.push(element.id)
+        })
+      })
+    },
+    handleDelete({ $index, row }) {
+      this.$confirm('确定要删除吗', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async() => {
+          await deleteUser(row.id)
+          this.list.splice($index, 1)
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
+        })
+        .catch(err => { console.error(err) })
+    },
+    fields(user) {
+      return {
+        name: user.name,
+        password: user.password,
+        roles: this.checkedRoles
+      }
+    },
+    async confirmSubmit() {
+      const isEdit = this.dialogType === 'edit'
+      if (isEdit) {
+        await updateUser(this.user.id, this.fields(this.user))
+        for (let index = 0; index < this.list.length; index++) {
+          if (this.list[index].id === this.user.id) {
+            this.list.splice(index, 1, Object.assign({}, this.user))
+            break
+          }
+        }
+      } else {
+        const { data } = await addUser(this.fields(this.user))
+        console.log(data)
+        this.user.id = data.id
+        this.list.push(this.user)
+      }
+
+      this.dialogVisible = false
+      this.$notify({
+        title: 'Success',
+        message: '操作成功',
+        type: 'success'
+      })
+    }
+  }
+}
+</script>

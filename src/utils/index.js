@@ -348,3 +348,13 @@ export function removeClass(ele, cls) {
     ele.className = ele.className.replace(reg, ' ')
   }
 }
+
+export function arrPluck(arr, key) {
+  const res = []
+  if (Array.isArray(arr)) {
+    arr.forEach(element => {
+      res.push(element[key])
+    })
+  }
+  return res
+}

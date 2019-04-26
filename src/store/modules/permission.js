@@ -6,7 +6,6 @@ import { mapRoutes, constantRoutes } from '@/router'
  */
 export function filterAsyncRoutes(routes) {
   const res = []
-
   routes.forEach(route => {
     const tmp = { ...route }
     if (tmp.children) {
