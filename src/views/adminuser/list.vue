@@ -5,12 +5,12 @@
     </el-button>
 
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
-      <el-table-column align="center" label="用户名" width="220">
+      <el-table-column align="center" label="用户名">
         <template slot-scope="scope">
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="创建时间" width="220">
+      <el-table-column align="center" label="创建时间">
         <template slot-scope="scope">
           {{ scope.row.created_at }}
         </template>
@@ -20,7 +20,7 @@
           {{ scope.row.roleStr }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="Operations">
+      <el-table-column align="center" label="操作">
         <template slot-scope="scope">
           <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
@@ -153,8 +153,22 @@ export default {
         roles: this.checkedRoles
       }
     },
+    getUserRole() {
+      this.user.roles = []
+      if (this.checkedRoles.length > 0) {
+        this.checkedRoles.forEach(roleId => {
+          for (let index = 0; index < this.roles.length; index++) {
+            if (this.roles[index].id === roleId) {
+              this.user.roles.push(this.roles[index])
+              break
+            }
+          }
+        })
+      }
+    },
     async confirmSubmit() {
       const isEdit = this.dialogType === 'edit'
+      this.getUserRole()
       if (isEdit) {
         await updateUser(this.user.id, this.fields(this.user))
         for (let index = 0; index < this.list.length; index++) {
@@ -165,10 +179,11 @@ export default {
         }
       } else {
         const { data } = await addUser(this.fields(this.user))
-        console.log(data)
         this.user.id = data.id
+        this.user.created_at = data.created_at
         this.list.push(this.user)
       }
+      this.list = this.handleUserList(this.list)
 
       this.dialogVisible = false
       this.$notify({

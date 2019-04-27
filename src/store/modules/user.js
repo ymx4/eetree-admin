@@ -32,6 +32,7 @@ const actions = {
       login({ name: name.trim(), password: password }).then(response => {
         const { data } = response
         commit('SET_TOKEN', data.token)
+        commit('SET_MENUS', [])
         setToken(data.token)
         resolve()
       }).catch(error => {
