@@ -37,6 +37,9 @@
             <el-checkbox v-for="permission in permissionsData" :key="permission.id" :label="permission.id">{{ permission.name }}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
+        <el-form-item label="菜单">
+          <el-tree ref="tree" :check-strictly="checkStrictly" :data="routesData" :props="defaultProps" show-checkbox node-key="id" class="menu-tree" />
+        </el-form-item>
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">
@@ -69,14 +72,23 @@ export default {
       role: Object.assign({}, defaultRole),
       permissions: [],
       list: [],
+      checkedPermissions: [],
+      routes: [],
       dialogVisible: false,
       dialogType: 'new',
-      checkedPermissions: []
+      checkStrictly: false,
+      defaultProps: {
+        children: 'children',
+        label: 'title'
+      }
     }
   },
   computed: {
     permissionsData() {
       return this.permissions
+    },
+    routesData() {
+      return this.routes
     }
   },
   created() {
@@ -87,7 +99,7 @@ export default {
   methods: {
     async getMenus() {
       const res = await getMenus()
-      this.menus = res.data
+      this.routes = this.generateRoutes(res.data)
     },
     async getPermissions() {
       const res = await getPermissions()
@@ -110,8 +122,38 @@ export default {
       })
       return list
     },
+    // Reshape the routes structure so that it looks the same as the sidebar
+    generateRoutes(routes) {
+      const res = []
+
+      for (let route of routes) {
+        // skip some route
+        if (route.hidden) { continue }
+
+        const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
+
+        if (route.children && onlyOneShowingChild && !route.alwaysShow) {
+          route = onlyOneShowingChild
+        }
+
+        const data = {
+          id: route.id,
+          title: route.meta && route.meta.title
+        }
+
+        // recursive child routes
+        if (route.children) {
+          data.children = this.generateRoutes(route.children)
+        }
+        res.push(data)
+      }
+      return res
+    },
     handleAddRole() {
       this.role = Object.assign({}, defaultRole)
+      if (this.$refs.tree) {
+        this.$refs.tree.setCheckedKeys([])
+      }
       this.checkedPermissions = []
       this.dialogType = 'new'
       this.dialogVisible = true
@@ -119,12 +161,16 @@ export default {
     handleEdit(scope) {
       this.dialogType = 'edit'
       this.dialogVisible = true
+      this.checkStrictly = true
       this.role = deepClone(scope.row)
       this.checkedPermissions = []
       this.$nextTick(() => {
         this.role.permissions.forEach(element => {
           this.checkedPermissions.push(element.id)
         })
+        this.$refs.tree.setCheckedKeys(this.role.menus)
+        // set checked state of a node not affects its father and child nodes
+        this.checkStrictly = false
       })
     },
     handleDelete({ $index, row }) {
@@ -146,7 +192,7 @@ export default {
     fields(role) {
       return {
         name: role.name,
-        password: role.password,
+        menus: role.menus,
         permissions: this.checkedPermissions
       }
     },
@@ -166,6 +212,7 @@ export default {
     async confirmSubmit() {
       const isEdit = this.dialogType === 'edit'
       this.getRolePermission()
+      this.role.menus = this.$refs.tree.getCheckedKeys()
       if (isEdit) {
         await updateRole(this.role.id, this.fields(this.role))
         for (let index = 0; index < this.list.length; index++) {
@@ -177,7 +224,6 @@ export default {
       } else {
         const { data } = await addRole(this.fields(this.role))
         this.role.id = data.id
-        this.role.created_at = data.created_at
         this.list.push(this.role)
       }
       this.list = this.handleRoleList(this.list)
@@ -188,6 +234,28 @@ export default {
         message: '操作成功',
         type: 'success'
       })
+    },
+    // reference: src/view/layout/components/Sidebar/SidebarItem.vue
+    onlyOneShowingChild(children = [], parent) {
+      let onlyOneChild = null
+      const showingChildren = children.filter(item => !item.hidden)
+
+      // When there is only one child route, the child route is displayed by default
+      if (showingChildren.length === 1) {
+        onlyOneChild = showingChildren[0]
+        if (!onlyOneChild.id) {
+          onlyOneChild.id = parent.id
+        }
+        return onlyOneChild
+      }
+
+      // Show parent if there are no child route to display
+      if (showingChildren.length === 0) {
+        onlyOneChild = { ... parent, noShowingChildren: true }
+        return onlyOneChild
+      }
+
+      return false
     }
   }
 }
