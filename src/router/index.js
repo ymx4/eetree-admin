@@ -91,7 +91,8 @@ export const mapRoutes = {
   Layout: Layout,
   adminuser_list: () => import('@/views/adminuser/list'),
   role_list: () => import('@/views/role/list'),
-  permission_list: () => import('@/views/permission/list')
+  permission_list: () => import('@/views/permission/list'),
+  category_list: () => import('@/views/category/list')
 }
 
 const createRouter = () => new Router({
