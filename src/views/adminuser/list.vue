@@ -32,6 +32,8 @@
       </el-table-column>
     </el-table>
 
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getUsers" />
+
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'添加'">
       <el-form :model="user" label-width="80px" label-position="left">
         <el-form-item label="用户名">
@@ -63,6 +65,7 @@
 import { arrPluck, deepClone } from '@/utils'
 import { getUsers, addUser, deleteUser, updateUser } from '@/api/adminuser'
 import { getRoles } from '@/api/role'
+import Pagination from '@/components/Pagination'
 
 const defaultUser = {
   name: '',
@@ -71,6 +74,8 @@ const defaultUser = {
 }
 
 export default {
+  name: 'AdminuserList',
+  components: { Pagination },
   data() {
     return {
       listLoading: true,
@@ -79,7 +84,12 @@ export default {
       list: [],
       dialogVisible: false,
       dialogType: 'new',
-      checkedRoles: []
+      checkedRoles: [],
+      total: 0,
+      listQuery: {
+        page: 1,
+        limit: 10
+      }
     }
   },
   computed: {
@@ -98,8 +108,11 @@ export default {
     },
     async getUsers() {
       this.listLoading = true
-      const res = await getUsers()
+      const res = await getUsers({ page: this.listQuery.page })
       this.list = this.handleUserList(res.data)
+      this.listQuery.page = res.meta.current_page
+      this.listQuery.limit = res.meta.per_page
+      this.total = res.meta.total
       this.listLoading = false
     },
     handleUserList(list) {

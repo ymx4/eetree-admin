@@ -32,6 +32,8 @@
       </el-table-column>
     </el-table>
 
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getPermissions" />
+
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'添加'">
       <el-form :model="permission" label-width="160px" label-position="left">
         <el-form-item label="名称">
@@ -71,6 +73,7 @@
 <script>
 import { deepClone } from '@/utils'
 import { getPermissions, addPermission, deletePermission, updatePermission } from '@/api/permission'
+import Pagination from '@/components/Pagination'
 
 const defaultPermission = {
   name: '',
@@ -79,6 +82,8 @@ const defaultPermission = {
 }
 
 export default {
+  name: 'PermissionList',
+  components: { Pagination },
   data() {
     return {
       httpMethods: ['ANY', 'GET', 'POST', 'PUT', 'DELETE'],
@@ -86,7 +91,12 @@ export default {
       permission: Object.assign({}, defaultPermission),
       list: [],
       dialogVisible: false,
-      dialogType: 'new'
+      dialogType: 'new',
+      total: 0,
+      listQuery: {
+        page: 1,
+        limit: 10
+      }
     }
   },
   created() {
@@ -95,8 +105,11 @@ export default {
   methods: {
     async getPermissions() {
       this.listLoading = true
-      const res = await getPermissions()
+      const res = await getPermissions({ page: this.listQuery.page })
       this.list = res.data
+      this.listQuery.page = res.meta.current_page
+      this.listQuery.limit = res.meta.per_page
+      this.total = res.meta.total
       this.listLoading = false
     },
     handleAddPermission() {

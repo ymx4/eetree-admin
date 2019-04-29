@@ -92,7 +92,10 @@ export const mapRoutes = {
   adminuser_list: () => import('@/views/adminuser/list'),
   role_list: () => import('@/views/role/list'),
   permission_list: () => import('@/views/permission/list'),
-  category_list: () => import('@/views/category/list')
+  category_list: () => import('@/views/category/list'),
+  article_publish: () => import('@/views/article/publish'),
+  article_review: () => import('@/views/article/review'),
+  comment_list: () => import('@/views/comment/list')
 }
 
 const createRouter = () => new Router({

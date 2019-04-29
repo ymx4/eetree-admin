@@ -1,9 +1,10 @@
 import request from '@/utils/request'
 
-export function getPermissions() {
+export function getPermissions(query) {
   return request({
     url: '/admin_permissions',
-    method: 'get'
+    method: 'get',
+    params: query
   })
 }
 

@@ -1,13 +1,13 @@
 import request from '@/utils/request'
 
-export function list() {
+export function getCategories() {
   return request({
     url: '/categories',
     method: 'get'
   })
 }
 
-export function add(data) {
+export function addCategory(data) {
   return request({
     url: '/categories',
     method: 'post',
@@ -15,7 +15,7 @@ export function add(data) {
   })
 }
 
-export function edit(id, data) {
+export function updateCategory(id, data) {
   return request({
     url: '/categories/' + id,
     method: 'put',
@@ -23,24 +23,17 @@ export function edit(id, data) {
   })
 }
 
-export function del(id) {
+export function deleteCategory(id) {
   return request({
     url: '/categories/' + id,
     method: 'delete'
   })
 }
 
-export function moveDown(id, data) {
+export function move(srcId, destId, type) {
+  const data = { dest: destId, type: type }
   return request({
-    url: '/categories/' + id,
-    method: 'put',
-    data
-  })
-}
-
-export function moveUp(id, data) {
-  return request({
-    url: '/categories/' + id,
+    url: '/categories/' + srcId + '/move',
     method: 'put',
     data
   })

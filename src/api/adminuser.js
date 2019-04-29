@@ -1,9 +1,10 @@
 import request from '@/utils/request'
 
-export function getUsers() {
+export function getUsers(query) {
   return request({
     url: '/admins',
-    method: 'get'
+    method: 'get',
+    params: query
   })
 }
 

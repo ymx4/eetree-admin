@@ -27,6 +27,8 @@
       </el-table-column>
     </el-table>
 
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getRoles" />
+
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'添加'">
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="名称">
@@ -58,6 +60,7 @@ import { arrPluck, deepClone } from '@/utils'
 import { getRoles, addRole, deleteRole, updateRole } from '@/api/role'
 import { getPermissions } from '@/api/permission'
 import { getMenus } from '@/api/menu'
+import Pagination from '@/components/Pagination'
 
 const defaultRole = {
   name: '',
@@ -66,6 +69,8 @@ const defaultRole = {
 }
 
 export default {
+  name: 'RoleList',
+  components: { Pagination },
   data() {
     return {
       listLoading: true,
@@ -80,6 +85,11 @@ export default {
       defaultProps: {
         children: 'children',
         label: 'title'
+      },
+      total: 0,
+      listQuery: {
+        page: 1,
+        limit: 10
       }
     }
   },
@@ -107,8 +117,11 @@ export default {
     },
     async getRoles() {
       this.listLoading = true
-      const res = await getRoles()
+      const res = await getRoles({ page: this.listQuery.page })
       this.list = this.handleRoleList(res.data)
+      this.listQuery.page = res.meta.current_page
+      this.listQuery.limit = res.meta.per_page
+      this.total = res.meta.total
       this.listLoading = false
     },
     handleRoleList(list) {

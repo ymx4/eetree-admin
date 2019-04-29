@@ -1,9 +1,10 @@
 import request from '@/utils/request'
 
-export function getRoles() {
+export function getRoles(query) {
   return request({
     url: '/admin_roles',
-    method: 'get'
+    method: 'get',
+    params: query
   })
 }
 
