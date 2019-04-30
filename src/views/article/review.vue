@@ -21,7 +21,7 @@
           <el-button type="primary" size="small" @click="handleShow(scope)">
             查看
           </el-button>
-          <el-button type="danger" size="small" @click="handleReview(scope, 9)">
+          <el-button type="success" size="small" @click="handleReview(scope, 9)">
             通过
           </el-button>
           <el-button type="danger" size="small" @click="handleReview(scope, 8)">
