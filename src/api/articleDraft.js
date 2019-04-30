@@ -8,7 +8,17 @@ export function getArticleDrafts(query) {
   })
 }
 
-export function review(id, data) {
+export function pass(id) {
+  const data = { status: 9 }
+  return request({
+    url: '/articleDrafts/' + id + '/review',
+    method: 'put',
+    data
+  })
+}
+
+export function refuse(id, data) {
+  data.status = 8
   return request({
     url: '/articleDrafts/' + id + '/review',
     method: 'put',

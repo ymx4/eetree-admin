@@ -23,7 +23,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
-          <el-button v-if="scope.row.active == 1" type="primary" size="small" @click="toggleActive(scope)">
+          <el-button v-if="scope.row.active == 1" type="danger" size="small" @click="toggleActive(scope)">
             屏蔽
           </el-button>
           <el-button v-if="scope.row.active == 0" type="primary" size="small" @click="toggleActive(scope)">

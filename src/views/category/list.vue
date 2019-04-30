@@ -37,7 +37,7 @@
     </el-tree>
 
     <el-dialog :title="textMap[dialogType]" :visible.sync="dialogVisible">
-      <el-form ref="form" :model="category" label-position="left" label-width="80px">
+      <el-form ref="categoryForm" :model="category" label-position="left" label-width="80px">
         <el-form-item label="名称" prop="name" :rules="[{ required: true, message: '不能为空'},]">
           <el-input v-model="category.name" placeholder="输入分类名称" />
         </el-form-item>
@@ -62,10 +62,6 @@ export default {
   name: 'CategoryManage',
   data: function() {
     return {
-      form: {
-        name: '',
-        parent_id: 0
-      },
       treeData: [],
       textMap: {
         'new': '创建',
@@ -107,7 +103,7 @@ export default {
       this.tempTreeCurrentData = data
       this.dialogType = 'new'
       this.$nextTick(function() {
-        this.$refs.form.clearValidate()
+        this.$refs.categoryForm.clearValidate()
       })
     },
     handleEdit(data) {
@@ -141,7 +137,7 @@ export default {
       }
     },
     handleSubmit() {
-      this.$refs.form.validate(async(valid) => {
+      this.$refs.categoryForm.validate(async(valid) => {
         if (valid) {
           if (this.dialogType === 'edit') {
             await updateCategory(this.category.id, this.fields(this.category))
