@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
-      <el-table-column align="center" label="所属用户">
+      <el-table-column align="center" label="作者">
         <template slot-scope="scope">
           {{ scope.row.user.nickname }}
         </template>
@@ -18,11 +18,14 @@
       </el-table-column>
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
-          <el-button type="primary" size="small" @click="handleEdit(scope)">
+          <!-- <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
+          </el-button> -->
+          <el-button v-if="scope.row.published === 0" type="primary" size="small" @click="handlePublish(scope, 1)">
+            上线
           </el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope)">
-            删除
+          <el-button v-if="scope.row.published === 1" type="warning" size="small" @click="handlePublish(scope, 0)">
+            下线
           </el-button>
         </template>
       </el-table-column>
@@ -35,7 +38,7 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { getArticles, deleteArticle } from '@/api/article'
+import { getArticles, updateArticle } from '@/api/article'
 import Pagination from '@/components/Pagination'
 
 const defaultArticle = {
@@ -78,21 +81,18 @@ export default {
       this.dialogVisible = true
       this.article = deepClone(scope.row)
     },
-    handleDelete({ $index, row }) {
-      this.$confirm('确定要删除吗', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+    async handlePublish(scope, publish) {
+      await updateArticle(scope.row.id, { publish })
+      for (let index = 0; index < this.list.length; index++) {
+        if (this.list[index].id === scope.row.id) {
+          this.list[index].published = publish
+          break
+        }
+      }
+      this.$message({
+        type: 'success',
+        message: '操作成功!'
       })
-        .then(async() => {
-          await deleteArticle(row.id)
-          this.list.splice($index, 1)
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          })
-        })
-        .catch(err => { console.error(err) })
     }
   }
 }
