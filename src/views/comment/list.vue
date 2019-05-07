@@ -8,7 +8,7 @@
       </el-table-column>
       <el-table-column align="center" label="评论文章" width="100">
         <template slot-scope="scope">
-          {{ scope.row.article.title }}
+          {{ scope.row.doc.title }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="评论时间" width="120">

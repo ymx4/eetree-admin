@@ -1,24 +1,24 @@
 import request from '@/utils/request'
 
-export function getArticles(query) {
+export function getDocs(query) {
   return request({
-    url: '/articles',
+    url: '/docs',
     method: 'get',
     params: query
   })
 }
 
-export function updateArticle(id, data) {
+export function updateDoc(id, data) {
   return request({
-    url: '/articles/' + id,
+    url: '/docs/' + id,
     method: 'put',
     data
   })
 }
 
-export function deleteArticle(id) {
+export function deleteDoc(id) {
   return request({
-    url: '/articles/' + id,
+    url: '/docs/' + id,
     method: 'delete'
   })
 }

@@ -31,28 +31,28 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getArticles" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getDocs" />
 
   </div>
 </template>
 
 <script>
 import { deepClone } from '@/utils'
-import { getArticles, updateArticle } from '@/api/article'
+import { getDocs, updateDoc } from '@/api/doc'
 import Pagination from '@/components/Pagination'
 
-const defaultArticle = {
+const defaultDoc = {
   name: '',
   password: ''
 }
 
 export default {
-  name: 'ArticlePublish',
+  name: 'DocPublish',
   components: { Pagination },
   data() {
     return {
       listLoading: true,
-      article: Object.assign({}, defaultArticle),
+      doc: Object.assign({}, defaultDoc),
       list: [],
       dialogVisible: false,
       dialogType: 'new',
@@ -64,12 +64,12 @@ export default {
     }
   },
   created() {
-    this.getArticles()
+    this.getDocs()
   },
   methods: {
-    async getArticles() {
+    async getDocs() {
       this.listLoading = true
-      const res = await getArticles({ page: this.listQuery.page })
+      const res = await getDocs({ page: this.listQuery.page })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
@@ -79,10 +79,10 @@ export default {
     handleEdit(scope) {
       this.dialogType = 'edit'
       this.dialogVisible = true
-      this.article = deepClone(scope.row)
+      this.doc = deepClone(scope.row)
     },
     async handlePublish(scope, publish) {
-      await updateArticle(scope.row.id, { publish })
+      await updateDoc(scope.row.id, { publish })
       for (let index = 0; index < this.list.length; index++) {
         if (this.list[index].id === scope.row.id) {
           this.list[index].published = publish

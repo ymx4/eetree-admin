@@ -14,7 +14,7 @@
 import tabPane from './components/TabPane'
 
 export default {
-  name: 'ArticleReview',
+  name: 'DocReview',
   components: { tabPane },
   data() {
     return {

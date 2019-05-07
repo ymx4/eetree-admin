@@ -1,8 +1,8 @@
 import request from '@/utils/request'
 
-export function getArticleDrafts(query) {
+export function getDocDrafts(query) {
   return request({
-    url: '/articleDrafts',
+    url: '/docDrafts',
     method: 'get',
     params: query
   })
@@ -11,7 +11,7 @@ export function getArticleDrafts(query) {
 export function pass(id) {
   const data = { status: 9 }
   return request({
-    url: '/articleDrafts/' + id + '/review',
+    url: '/docDrafts/' + id + '/review',
     method: 'put',
     data
   })
@@ -20,7 +20,7 @@ export function pass(id) {
 export function refuse(id, data) {
   data.status = 8
   return request({
-    url: '/articleDrafts/' + id + '/review',
+    url: '/docDrafts/' + id + '/review',
     method: 'put',
     data
   })

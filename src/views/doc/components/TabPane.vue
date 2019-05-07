@@ -22,7 +22,7 @@
             查看
           </el-button>
           <el-button type="success" size="small" @click="handlePass(scope)">
-            通过
+            通过并上线
           </el-button>
           <el-button v-if="status==='submit'" type="danger" size="small" @click="handleRefuse(scope)">
             拒绝
@@ -31,12 +31,12 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getArticleDrafts" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getDocDrafts" />
   </div>
 </template>
 
 <script>
-import { getArticleDrafts, pass, refuse } from '@/api/articleDraft'
+import { getDocDrafts, pass, refuse } from '@/api/docDraft'
 import Pagination from '@/components/Pagination'
 
 const statusMap = {
@@ -45,7 +45,7 @@ const statusMap = {
 }
 
 export default {
-  name: 'ArticlePublish',
+  name: 'DocPublish',
   components: { Pagination },
   props: {
     status: {
@@ -56,7 +56,7 @@ export default {
   data() {
     return {
       listLoading: true,
-      articleDraft: {},
+      docDraft: {},
       list: [],
       dialogVisible: false,
       total: 0,
@@ -67,12 +67,12 @@ export default {
     }
   },
   created() {
-    this.getArticleDrafts()
+    this.getDocDrafts()
   },
   methods: {
-    async getArticleDrafts() {
+    async getDocDrafts() {
       this.listLoading = true
-      const res = await getArticleDrafts({ status: statusMap[this.status], page: this.listQuery.page })
+      const res = await getDocDrafts({ status: statusMap[this.status], page: this.listQuery.page })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
@@ -80,7 +80,7 @@ export default {
       this.listLoading = false
     },
     async handlePass({ $index, row }) {
-      this.$confirm('确定要通过吗', '提示', {
+      this.$confirm('确定要通过并上线吗', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -97,7 +97,7 @@ export default {
     },
     handleRefuse(scope) {
       this.dialogVisible = true
-      this.articleDraft = {
+      this.docDraft = {
         id: scope.row.id,
         review_remarks: ''
       }
@@ -105,9 +105,9 @@ export default {
     async confirmRefuse() {
       this.$refs.reviewForm.validate(async(valid) => {
         if (valid) {
-          await refuse(this.articleDraft.id, { review_remarks: this.articleDraft.review_remarks })
+          await refuse(this.docDraft.id, { review_remarks: this.docDraft.review_remarks })
           for (let index = 0; index < this.list.length; index++) {
-            if (this.list[index].id === this.articleDraft.id) {
+            if (this.list[index].id === this.docDraft.id) {
               this.list.splice(index, 1)
               break
             }

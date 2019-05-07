@@ -93,8 +93,8 @@ export const mapRoutes = {
   role_list: () => import('@/views/role/list'),
   permission_list: () => import('@/views/permission/list'),
   category_list: () => import('@/views/category/list'),
-  article_publish: () => import('@/views/article/publish'),
-  article_review: () => import('@/views/article/review'),
+  doc_index: () => import('@/views/doc/index'),
+  doc_review: () => import('@/views/doc/review'),
   comment_list: () => import('@/views/comment/list')
 }
 
