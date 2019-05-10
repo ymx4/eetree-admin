@@ -385,9 +385,25 @@ export function unflatten(arr) {
         mappedArr[mappedElem.parent_id].children.sort((a, b) => a.order - b.order)
       } else { // If the element is at the root level, add it to first level elements array.
         tree.push(mappedElem)
-        tree.sort((a, b) => a.order - b.order)
+        if (typeof mappedElem['sort'] !== 'undefined') {
+          tree.sort((a, b) => a.order - b.order)
+        }
       }
     }
   }
   return tree
+}
+
+export function selectOptions(tree, labelKey, valueKey, depth = 0) {
+  let options = []
+  tree.forEach(element => {
+    options.push({
+      label: Array(depth).fill('--').join('') + ' ' + element[labelKey],
+      value: element[valueKey]
+    })
+    if (typeof element.children !== 'undefined' && element.children.length > 0) {
+      options = options.concat(selectOptions(element.children, labelKey, valueKey, depth + 1))
+    }
+  })
+  return options
 }

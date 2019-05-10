@@ -8,8 +8,8 @@ export function getDocDrafts(query) {
   })
 }
 
-export function pass(id) {
-  const data = { status: 9 }
+export function pass(id, data) {
+  data.status = 9
   return request({
     url: '/docDrafts/' + id + '/review',
     method: 'put',

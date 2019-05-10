@@ -71,6 +71,17 @@ service.interceptors.response.use(
           })
         })
         return Promise.reject(error)
+      } else if (error.response.status === 422) {
+        let errorMsg = ''
+        for (var key in error.response.data.errors) {
+          errorMsg = error.response.data.errors[key][0]
+        }
+        Message({
+          message: errorMsg,
+          type: 'error',
+          duration: 5 * 1000
+        })
+        return Promise.reject(error)
       }
     }
     Message({

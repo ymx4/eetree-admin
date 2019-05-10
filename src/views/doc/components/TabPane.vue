@@ -32,12 +32,46 @@
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getDocDrafts" />
+
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='pass'?'发布上线':'拒绝'">
+      <el-form ref="reviewForm" :model="docDraft" label-width="80px" label-position="left">
+        <el-form-item v-if="dialogType==='pass'" label="分类">
+          <el-select v-model="docDraft.category_id" placeholder="请选择" :rules="[{ required: true}]">
+            <el-option
+              v-for="category in categories"
+              :key="category.value"
+              :label="category.label"
+              :value="category.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="dialogType==='refuse'" label="拒绝原因" :rules="[{ required: true}]">
+          <el-input
+            v-model="docDraft.review_remarks"
+            type="textarea"
+            :rows="2"
+            placeholder="请输入拒绝的原因"
+          />
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="dialogVisible=false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="confirmSubmit">
+          提交
+        </el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import { getDocDrafts, pass, refuse } from '@/api/docDraft'
+import { getCategories } from '@/api/category'
 import Pagination from '@/components/Pagination'
+import { unflatten, selectOptions } from '@/utils'
 
 const statusMap = {
   submit: 1,
@@ -56,9 +90,11 @@ export default {
   data() {
     return {
       listLoading: true,
+      categories: [],
       docDraft: {},
       list: [],
       dialogVisible: false,
+      dialogType: 'pass',
       total: 0,
       listQuery: {
         page: 1,
@@ -68,6 +104,7 @@ export default {
   },
   created() {
     this.getDocDrafts()
+    this.getCategories()
   },
   methods: {
     async getDocDrafts() {
@@ -79,33 +116,31 @@ export default {
       this.total = res.meta.total
       this.listLoading = false
     },
+    async getCategories() {
+      const res = await getCategories()
+      const tree = unflatten(res.data)
+      this.categories = selectOptions(tree, 'name', 'id')
+    },
     async handlePass({ $index, row }) {
-      this.$confirm('确定要通过并上线吗', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(async() => {
-          await pass(row.id)
-          this.list.splice($index, 1)
-          this.$message({
-            type: 'success',
-            message: '操作成功!'
-          })
-        })
-        .catch(err => { console.error(err) })
+      this.dialogVisible = true
+      this.dialogType = 'pass'
+      this.docDraft = row
     },
     handleRefuse(scope) {
       this.dialogVisible = true
-      this.docDraft = {
-        id: scope.row.id,
-        review_remarks: ''
-      }
+      this.dialogType = 'refuse'
+      this.docDraft = scope.row
+      this.docDraft.review_remarks = ''
     },
-    async confirmRefuse() {
+    async confirmSubmit() {
       this.$refs.reviewForm.validate(async(valid) => {
+        console.log(this.docDraft, valid)
         if (valid) {
-          await refuse(this.docDraft.id, { review_remarks: this.docDraft.review_remarks })
+          if (this.dialogType === 'pass') {
+            await pass(this.docDraft.id, { category_id: this.docDraft.category_id })
+          } else {
+            await refuse(this.docDraft.id, { review_remarks: this.docDraft.review_remarks })
+          }
           for (let index = 0; index < this.list.length; index++) {
             if (this.list[index].id === this.docDraft.id) {
               this.list.splice(index, 1)
