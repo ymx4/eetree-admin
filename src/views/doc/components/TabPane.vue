@@ -35,8 +35,8 @@
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='pass'?'发布上线':'拒绝'">
       <el-form ref="reviewForm" :model="docDraft" label-width="80px" label-position="left">
-        <el-form-item v-if="dialogType==='pass'" label="分类">
-          <el-select v-model="docDraft.category_id" placeholder="请选择" :rules="[{ required: true}]">
+        <el-form-item v-if="dialogType==='pass'" label="分类" prop="doc.category_id" :rules="[{ required: true, message: '不能为空'},]">
+          <el-select v-model="docDraft.doc.category_id" placeholder="请选择">
             <el-option
               v-for="category in categories"
               :key="category.value"
@@ -45,7 +45,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="dialogType==='refuse'" label="拒绝原因" :rules="[{ required: true}]">
+        <el-form-item v-if="dialogType==='refuse'" label="拒绝原因" prop="review_remarks" :rules="[{ required: true, message: '不能为空'},]">
           <el-input
             v-model="docDraft.review_remarks"
             type="textarea"
@@ -71,7 +71,7 @@
 import { getDocDrafts, pass, refuse } from '@/api/docDraft'
 import { getCategories } from '@/api/category'
 import Pagination from '@/components/Pagination'
-import { unflatten, selectOptions } from '@/utils'
+import { unflatten, deepClone, selectOptions } from '@/utils'
 
 const statusMap = {
   submit: 1,
@@ -91,7 +91,11 @@ export default {
     return {
       listLoading: true,
       categories: [],
-      docDraft: {},
+      docDraft: {
+        doc: {
+          category_id: 0
+        }
+      },
       list: [],
       dialogVisible: false,
       dialogType: 'pass',
@@ -121,23 +125,35 @@ export default {
       const tree = unflatten(res.data)
       this.categories = selectOptions(tree, 'name', 'id')
     },
-    async handlePass({ $index, row }) {
+    async handlePass(scope) {
       this.dialogVisible = true
       this.dialogType = 'pass'
-      this.docDraft = row
+      this.docDraft = this.getDocDraft(scope.row)
+      this.$nextTick(function() {
+        this.$refs.reviewForm.clearValidate()
+      })
+    },
+    getDocDraft(row) {
+      const docDraft = deepClone(row)
+      if (docDraft.doc.category_id === 0) {
+        docDraft.doc.category_id = ''
+      }
+      return docDraft
     },
     handleRefuse(scope) {
       this.dialogVisible = true
       this.dialogType = 'refuse'
-      this.docDraft = scope.row
-      this.docDraft.review_remarks = ''
+      this.docDraft = deepClone(scope.row)
+      this.$set(this.docDraft, 'review_remarks', '')
+      this.$nextTick(function() {
+        this.$refs.reviewForm.clearValidate()
+      })
     },
     async confirmSubmit() {
       this.$refs.reviewForm.validate(async(valid) => {
-        console.log(this.docDraft, valid)
         if (valid) {
           if (this.dialogType === 'pass') {
-            await pass(this.docDraft.id, { category_id: this.docDraft.category_id })
+            await pass(this.docDraft.id, { category_id: this.docDraft.doc.category_id })
           } else {
             await refuse(this.docDraft.id, { review_remarks: this.docDraft.review_remarks })
           }
