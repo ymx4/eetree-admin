@@ -76,12 +76,23 @@ service.interceptors.response.use(
         for (var key in error.response.data.errors) {
           errorMsg = error.response.data.errors[key][0]
         }
-        Message({
-          message: errorMsg,
-          type: 'error',
-          duration: 5 * 1000
-        })
-        return Promise.reject(error)
+        if (errorMsg !== '') {
+          Message({
+            message: errorMsg,
+            type: 'error',
+            duration: 5 * 1000
+          })
+          return Promise.reject(error)
+        }
+      } else if (error.response.status === 400) {
+        if (error.response.data.message && error.response.data.message !== '') {
+          Message({
+            message: error.response.data.message,
+            type: 'error',
+            duration: 5 * 1000
+          })
+          return Promise.reject(error)
+        }
       }
     }
     Message({
