@@ -1,17 +1,24 @@
 import request from '@/utils/request'
 
-export function getDocDrafts(query) {
+export function getDocPublishs(query) {
   return request({
-    url: '/docDrafts',
+    url: '/docPublishs',
     method: 'get',
     params: query
+  })
+}
+
+export function docShow(id) {
+  return request({
+    url: '/docPublishs/' + id + '/previewKey',
+    method: 'get'
   })
 }
 
 export function pass(id, data) {
   data.status = 9
   return request({
-    url: '/docDrafts/' + id + '/review',
+    url: '/docPublishs/' + id + '/review',
     method: 'put',
     data
   })
@@ -20,7 +27,7 @@ export function pass(id, data) {
 export function refuse(id, data) {
   data.status = 8
   return request({
-    url: '/docDrafts/' + id + '/review',
+    url: '/docPublishs/' + id + '/review',
     method: 'put',
     data
   })
