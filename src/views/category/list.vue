@@ -26,6 +26,12 @@
             编辑
           </el-button>
           <el-button
+            type="text"
+            @click="() => handleMoveDoc(node, data)"
+          >
+            转移文档
+          </el-button>
+          <el-button
             v-if="data.id!=0"
             type="text"
             @click="() => handleDelete(node, data)"
@@ -47,12 +53,36 @@
         <el-button type="primary" @click="handleSubmit">{{ textMap[dialogType] }}</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog :visible.sync="moveDocDialogVisible" title="文档转移">
+      <el-form ref="moveDocForm" :model="moveDocDest" label-width="80px" label-position="left">
+        <el-form-item label="目标分类" prop="id" :rules="[{ required: true, message: '不能为空'},]">
+          <el-select v-model="moveDocDest.id" placeholder="请选择">
+            <el-option
+              v-for="category in moveDocCategories"
+              :key="category.value"
+              :label="category.label"
+              :value="category.value"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="moveDocDialogVisible=false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="confirmMoveDoc">
+          提交
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { addCategory, updateCategory, getCategories, deleteCategory, move } from '@/api/category'
-import { unflatten, deepClone } from '@/utils'
+import { moveDocs } from '@/api/doc'
+import { unflatten, deepClone, selectOptions } from '@/utils'
 
 const defaultCategory = {
   name: '',
@@ -73,7 +103,13 @@ export default {
       dialogVisible: false,
       dialogType: 'new',
       category: Object.assign({}, defaultCategory),
-      editTreeNode: {}
+      editTreeNode: {},
+      moveDocSrc: 0,
+      moveDocDialogVisible: false,
+      moveDocCategories: [],
+      moveDocDest: {
+        id: ''
+      }
     }
   },
   created: function() {
@@ -90,6 +126,7 @@ export default {
       }]
       root[0].children = tree
       this.treeData = root
+      this.moveDocCategories = selectOptions(tree, 'name', 'id')
     },
     async handleDrop(draggingNode, dropNode, dropType, ev) {
       await move(draggingNode.data.id, dropNode.data.id, dropType)
@@ -111,6 +148,29 @@ export default {
       this.dialogVisible = true
       this.category = deepClone(data)
       this.dialogType = 'edit'
+    },
+    handleMoveDoc(node, data) {
+      this.moveDocSrc = data.id
+      this.moveDocDest.id = ''
+      this.moveDocDialogVisible = true
+    },
+    async confirmMoveDoc() {
+      this.$refs.moveDocForm.validate(async(valid) => {
+        if (valid) {
+          this.$confirm('确定要把该分类下的文档全部转移到目标分类中吗', '警告', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          })
+            .then(async() => {
+              await moveDocs(this.moveDocSrc, this.moveDocDest.id)
+              this.$message({ message: '操作成功', type: 'success' })
+              this.moveDocDialogVisible = false
+            })
+        } else {
+          return false
+        }
+      })
     },
     handleDelete(node, data) {
       this.$confirm('确定要删除吗', '警告', {

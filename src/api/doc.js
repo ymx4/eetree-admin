@@ -16,6 +16,14 @@ export function updateDoc(id, data) {
   })
 }
 
+export function moveDocs(src, dest) {
+  return request({
+    url: '/docs/move',
+    method: 'post',
+    data: { src, dest }
+  })
+}
+
 export function deleteDoc(id) {
   return request({
     url: '/docs/' + id,
