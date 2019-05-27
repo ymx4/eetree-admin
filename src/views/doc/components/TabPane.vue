@@ -18,8 +18,8 @@
       </el-table-column>
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
-          <el-button type="primary" size="small" @click="handleShow(scope)">
-            查看
+          <el-button type="primary" size="small" @click="handlePreview(scope)">
+            预览
           </el-button>
           <el-button type="success" size="small" @click="handlePass(scope)">
             通过并上线
@@ -64,14 +64,13 @@
       </div>
     </el-dialog>
     <el-dialog :visible.sync="previewVisable" title="预览" :fullscreen="true">
-      <iframe id="docPreview" :src="previewUrl" style="width: 100%; border: 0;" :height="previewHeight" />
+      <iframe :src="previewUrl" style="width: 100%; border: 0;" :height="previewHeight" />
     </el-dialog>
-
   </div>
 </template>
 
 <script>
-import { getDocPublishs, pass, refuse, docShow } from '@/api/docPublish'
+import { getDocPublishs, pass, refuse, publishPreview } from '@/api/docPublish'
 import { getCategories } from '@/api/category'
 import Pagination from '@/components/Pagination'
 import { unflatten, deepClone, selectOptions } from '@/utils'
@@ -108,7 +107,7 @@ export default {
       },
       previewVisable: false,
       previewUrl: '',
-      previewHeight: document.documentElement.clientHeight
+      previewHeight: 0
     }
   },
   created() {
@@ -130,8 +129,9 @@ export default {
       const tree = unflatten(res.data)
       this.categories = selectOptions(tree, 'name', 'id')
     },
-    handleShow(scope) {
-      docShow(scope.row.id).then(res => {
+    handlePreview(scope) {
+      publishPreview(scope.row.id).then(res => {
+        this.previewHeight = document.documentElement.clientHeight
         this.previewVisable = true
         this.previewUrl = res.data.url
       })

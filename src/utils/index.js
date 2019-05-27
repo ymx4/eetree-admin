@@ -407,3 +407,7 @@ export function selectOptions(tree, labelKey, valueKey, depth = 0) {
   })
   return options
 }
+
+export function frontBaseUrl() {
+  return 'http://www.eelib.io/'
+}

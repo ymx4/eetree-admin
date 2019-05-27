@@ -30,3 +30,10 @@ export function deleteDoc(id) {
     method: 'delete'
   })
 }
+
+export function docPreview(id) {
+  return request({
+    url: '/docs/' + id + '/previewKey',
+    method: 'get'
+  })
+}

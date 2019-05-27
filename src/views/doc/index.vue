@@ -18,6 +18,14 @@
       </el-table-column>
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
+          <el-button v-if="scope.row.published === 1" type="primary" size="small">
+            <a target="_blank" :href="frontBaseUrl + '/doc/detail/' + scope.row.id">
+              查看
+            </a>
+          </el-button>
+          <el-button v-if="scope.row.published === 0" type="primary" size="small" @click="handlePreview(scope)">
+            预览
+          </el-button>
           <!-- <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
           </el-button> -->
@@ -30,6 +38,9 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-dialog :visible.sync="previewVisable" title="预览" :fullscreen="true">
+      <iframe :src="previewUrl" style="width: 100%; border: 0;" :height="previewHeight" />
+    </el-dialog>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getDocs" />
 
@@ -37,8 +48,8 @@
 </template>
 
 <script>
-import { deepClone } from '@/utils'
-import { getDocs, updateDoc } from '@/api/doc'
+import { deepClone, frontBaseUrl } from '@/utils'
+import { getDocs, updateDoc, docPreview } from '@/api/doc'
 import Pagination from '@/components/Pagination'
 
 const defaultDoc = {
@@ -51,6 +62,7 @@ export default {
   components: { Pagination },
   data() {
     return {
+      frontBaseUrl: frontBaseUrl(),
       listLoading: true,
       doc: Object.assign({}, defaultDoc),
       list: [],
@@ -60,7 +72,10 @@ export default {
       listQuery: {
         page: 1,
         limit: 10
-      }
+      },
+      previewVisable: false,
+      previewUrl: '',
+      previewHeight: 0
     }
   },
   created() {
@@ -80,6 +95,13 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.doc = deepClone(scope.row)
+    },
+    handlePreview(scope) {
+      docPreview(scope.row.id).then(res => {
+        this.previewHeight = document.documentElement.clientHeight
+        this.previewVisable = true
+        this.previewUrl = res.data.url
+      })
     },
     async handlePublish(scope, publish) {
       await updateDoc(scope.row.id, { publish })

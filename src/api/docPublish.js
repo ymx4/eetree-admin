@@ -8,7 +8,7 @@ export function getDocPublishs(query) {
   })
 }
 
-export function docShow(id) {
+export function publishPreview(id) {
   return request({
     url: '/docPublishs/' + id + '/previewKey',
     method: 'get'
