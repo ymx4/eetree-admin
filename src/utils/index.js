@@ -381,11 +381,13 @@ export function unflatten(arr) {
       mappedElem = mappedArr[id]
       // If the element is not at the root level, add it to its parent array of children.
       if (mappedElem.parent_id) {
-        mappedArr[mappedElem['parent_id']]['children'].push(mappedElem)
-        mappedArr[mappedElem.parent_id].children.sort((a, b) => a.order - b.order)
+        if (mappedArr.hasOwnProperty(mappedElem.parent_id)) {
+          mappedArr[mappedElem.parent_id].children.push(mappedElem)
+          mappedArr[mappedElem.parent_id].children.sort((a, b) => a.order - b.order)
+        }
       } else { // If the element is at the root level, add it to first level elements array.
         tree.push(mappedElem)
-        if (typeof mappedElem['sort'] !== 'undefined') {
+        if (typeof mappedElem['order'] !== 'undefined') {
           tree.sort((a, b) => a.order - b.order)
         }
       }

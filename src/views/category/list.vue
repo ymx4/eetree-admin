@@ -26,10 +26,18 @@
             编辑
           </el-button>
           <el-button
+            v-if="data.id!=0"
             type="text"
             @click="() => handleMoveDoc(node, data)"
           >
             转移文档
+          </el-button>
+          <el-button
+            v-if="data.id==0"
+            type="text"
+            @click="() => handleMoveDoc(node, data)"
+          >
+            转移未分类文档
           </el-button>
           <el-button
             v-if="data.id!=0"
@@ -157,6 +165,10 @@ export default {
     async confirmMoveDoc() {
       this.$refs.moveDocForm.validate(async(valid) => {
         if (valid) {
+          if (this.moveDocSrc === this.moveDocDest.id) {
+            this.$message({ message: '不能选择本身', type: 'warning' })
+            return false
+          }
           this.$confirm('确定要把该分类下的文档全部转移到目标分类中吗', '警告', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',

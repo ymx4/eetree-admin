@@ -35,8 +35,8 @@
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='pass'?'发布上线':'拒绝'">
       <el-form ref="reviewForm" :model="docPublish" label-width="80px" label-position="left">
-        <el-form-item v-if="dialogType==='pass'" label="分类" prop="doc.category_id" :rules="[{ required: true, message: '不能为空'},]">
-          <el-select v-model="docPublish.doc.category_id" placeholder="请选择">
+        <el-form-item v-if="dialogType==='pass'" label="分类" prop="docCategory" :rules="[{ required: true, message: '不能为空'},]">
+          <el-select v-model="docPublish.docCategory" multiple placeholder="请选择">
             <el-option
               v-for="category in categories"
               :key="category.value"
@@ -93,9 +93,7 @@ export default {
       listLoading: true,
       categories: [],
       docPublish: {
-        doc: {
-          category_id: 0
-        }
+        docCategory: []
       },
       list: [],
       dialogVisible: false,
@@ -139,17 +137,10 @@ export default {
     async handlePass(scope) {
       this.dialogVisible = true
       this.dialogType = 'pass'
-      this.docPublish = this.getDocPublish(scope.row)
+      this.docPublish = deepClone(scope.row)
       this.$nextTick(function() {
         this.$refs.reviewForm.clearValidate()
       })
-    },
-    getDocPublish(row) {
-      const docPublish = deepClone(row)
-      if (docPublish.doc.category_id === 0) {
-        docPublish.doc.category_id = ''
-      }
-      return docPublish
     },
     handleRefuse(scope) {
       this.dialogVisible = true
@@ -164,7 +155,7 @@ export default {
       this.$refs.reviewForm.validate(async(valid) => {
         if (valid) {
           if (this.dialogType === 'pass') {
-            await pass(this.docPublish.id, { category_id: this.docPublish.doc.category_id })
+            await pass(this.docPublish.id, { category_id: this.docPublish.docCategory })
           } else {
             await refuse(this.docPublish.id, { review_remarks: this.docPublish.review_remarks })
           }
