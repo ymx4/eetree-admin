@@ -29,6 +29,12 @@
           <!-- <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
           </el-button> -->
+          <el-button v-if="scope.row.docTop" type="primary" size="small" @click="handleTop(scope, 0)">
+            取消置顶
+          </el-button>
+          <el-button v-if="!scope.row.docTop" type="primary" size="small" @click="handleTop(scope, 1)">
+            置顶
+          </el-button>
           <el-button v-if="scope.row.published === 0" type="primary" size="small" @click="handlePublish(scope, 1)">
             上线
           </el-button>
@@ -40,6 +46,33 @@
     </el-table>
     <el-dialog :visible.sync="previewVisable" title="预览" :fullscreen="true">
       <iframe :src="previewUrl" style="width: 100%; border: 0;" :height="previewHeight" />
+    </el-dialog>
+    <el-dialog :visible.sync="topVisible" title="置顶">
+      <el-form :model="docTop" label-width="160px" label-position="left">
+        <el-form-item label="置顶时间段">
+          <el-date-picker
+            v-model="docTop.date"
+            type="datetimerange"
+            range-separator="至"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+          />
+        </el-form-item>
+        <el-form-item label="展示次数（0为不限制）">
+          <el-input v-model="docTop.threshold" placeholder="展示次数" />
+        </el-form-item>
+        <el-form-item v-if="docTop.view_count > 0" label="已展示次数">
+          <el-input v-model="docTop.view_count" :disabled="true" />
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="topVisible=false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="confirmTop">
+          提交
+        </el-button>
+      </div>
     </el-dialog>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getDocs" />
@@ -55,6 +88,13 @@ import Pagination from '@/components/Pagination'
 const defaultDoc = {
   name: '',
   password: ''
+}
+
+const defaultTop = {
+  date: '',
+  threshold: 0,
+  view_count: 0,
+  top: true
 }
 
 export default {
@@ -75,7 +115,9 @@ export default {
       },
       previewVisable: false,
       previewUrl: '',
-      previewHeight: 0
+      previewHeight: 0,
+      topVisible: false,
+      docTop: Object.assign({}, defaultTop)
     }
   },
   created() {
@@ -115,6 +157,13 @@ export default {
         type: 'success',
         message: '操作成功!'
       })
+    },
+    handleTop(scope, top) {
+      if (top === 1) {
+        this.topVisible = true
+      }
+    },
+    confirmTop() {
     }
   }
 }
