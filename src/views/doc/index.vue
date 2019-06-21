@@ -1,5 +1,15 @@
 <template>
   <div class="app-container">
+    <div class="filter-container">
+      <!-- <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" /> -->
+      <el-select v-model="searchType" style="width: 140px" class="filter-item" @change="getDocs">
+        <el-option label="所有" value="all" />
+        <el-option label="置顶文档" value="top" />
+      </el-select>
+      <!-- <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getDocs">
+        搜索
+      </el-button> -->
+    </div>
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
       <el-table-column align="center" label="作者">
         <template slot-scope="scope">
@@ -9,6 +19,11 @@
       <el-table-column align="center" label="标题">
         <template slot-scope="scope">
           {{ scope.row.title }}
+        </template>
+      </el-table-column>
+      <el-table-column v-if="searchType === 'top'" align="center" label="置顶已展示">
+        <template slot-scope="scope">
+          {{ scope.row.docTop.view_count }}次
         </template>
       </el-table-column>
       <el-table-column align="center" label="创建时间">
@@ -29,10 +44,10 @@
           <!-- <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
           </el-button> -->
-          <el-button v-if="scope.row.docTop" type="primary" size="small" @click="handleTop(scope, 0)">
+          <el-button v-if="scope.row.docTop && scope.row.docTop.is_top === 1" type="warning" size="small" @click="handleTop(scope)">
             取消置顶
           </el-button>
-          <el-button v-if="!scope.row.docTop" type="primary" size="small" @click="handleTop(scope, 1)">
+          <el-button v-else type="primary" size="small" @click="handleTop(scope)">
             置顶
           </el-button>
           <el-button v-if="scope.row.published === 0" type="primary" size="small" @click="handlePublish(scope, 1)">
@@ -56,6 +71,7 @@
             range-separator="至"
             start-placeholder="开始时间"
             end-placeholder="结束时间"
+            value-format="yyyy-MM-dd HH:mm:ss"
           />
         </el-form-item>
         <el-form-item label="展示次数（0为不限制）">
@@ -82,7 +98,7 @@
 
 <script>
 import { deepClone, frontBaseUrl } from '@/utils'
-import { getDocs, updateDoc, docPreview } from '@/api/doc'
+import { getDocs, updateDoc, docPreview, docTop, docUnTop } from '@/api/doc'
 import Pagination from '@/components/Pagination'
 
 const defaultDoc = {
@@ -94,7 +110,7 @@ const defaultTop = {
   date: '',
   threshold: 0,
   view_count: 0,
-  top: true
+  is_top: 1
 }
 
 export default {
@@ -102,6 +118,7 @@ export default {
   components: { Pagination },
   data() {
     return {
+      searchType: 'all',
       frontBaseUrl: frontBaseUrl(),
       listLoading: true,
       doc: Object.assign({}, defaultDoc),
@@ -111,12 +128,14 @@ export default {
       total: 0,
       listQuery: {
         page: 1,
-        limit: 10
+        limit: 10,
+        title: ''
       },
       previewVisable: false,
       previewUrl: '',
       previewHeight: 0,
       topVisible: false,
+      topId: 0,
       docTop: Object.assign({}, defaultTop)
     }
   },
@@ -126,7 +145,10 @@ export default {
   methods: {
     async getDocs() {
       this.listLoading = true
-      const res = await getDocs({ page: this.listQuery.page })
+      const res = await getDocs({
+        page: this.listQuery.page,
+        sType: this.searchType
+      })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
@@ -158,12 +180,38 @@ export default {
         message: '操作成功!'
       })
     },
-    handleTop(scope, top) {
-      if (top === 1) {
+    async handleTop(scope) {
+      this.topId = scope.row.id
+      if (scope.row.docTop && scope.row.docTop.is_top === 1) {
+        await docUnTop(this.topId)
+        this.list[scope.$index].docTop.is_top = 0
+        this.$message({
+          type: 'success',
+          message: '取消成功!'
+        })
+      } else {
         this.topVisible = true
+        if (scope.row.docTop) {
+          this.docTop = deepClone(scope.row.docTop)
+        } else {
+          this.docTop = deepClone(defaultTop)
+        }
       }
     },
-    confirmTop() {
+    async confirmTop() {
+      await docTop(this.topId, this.docTop)
+      for (let index = 0; index < this.list.length; index++) {
+        if (this.list[index].id === this.topId) {
+          this.list[index].docTop = deepClone(this.docTop)
+          this.list[index].docTop.is_top = 1
+          break
+        }
+      }
+      this.$message({
+        type: 'success',
+        message: '操作成功!'
+      })
+      this.topVisible = false
     }
   }
 }

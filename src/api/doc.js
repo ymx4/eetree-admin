@@ -37,3 +37,18 @@ export function docPreview(id) {
     method: 'get'
   })
 }
+
+export function docTop(id, data) {
+  return request({
+    url: '/docs/' + id + '/top',
+    method: 'put',
+    data
+  })
+}
+
+export function docUnTop(id) {
+  return request({
+    url: '/docs/' + id + '/untop',
+    method: 'put'
+  })
+}
