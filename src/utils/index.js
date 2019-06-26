@@ -411,5 +411,5 @@ export function selectOptions(tree, labelKey, valueKey, depth = 0) {
 }
 
 export function frontBaseUrl() {
-  return 'http://www.eelib.io/'
+  return 'https://www.eetree.cn/'
 }

@@ -34,7 +34,7 @@
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
           <el-button v-if="scope.row.published === 1" type="primary" size="small">
-            <a target="_blank" :href="frontBaseUrl + '/doc/detail/' + scope.row.id">
+            <a target="_blank" :href="frontBaseUrl + 'doc/detail/' + scope.row.id">
               查看
             </a>
           </el-button>
@@ -74,6 +74,12 @@
             value-format="yyyy-MM-dd HH:mm:ss"
           />
         </el-form-item>
+        <el-form-item label="首页置顶">
+          <el-switch v-model.number="docTop.page_index" :active-value="1" :inactive-value="0" />
+        </el-form-item>
+        <el-form-item label="分类页置顶">
+          <el-switch v-model.number="docTop.page_category" :active-value="1" :inactive-value="0" />
+        </el-form-item>
         <el-form-item label="展示次数（0为不限制）">
           <el-input v-model="docTop.threshold" placeholder="展示次数" />
         </el-form-item>
@@ -108,6 +114,8 @@ const defaultDoc = {
 
 const defaultTop = {
   date: '',
+  page_index: 0,
+  page_category: 0,
   threshold: 0,
   view_count: 0,
   is_top: 1

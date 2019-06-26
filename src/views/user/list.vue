@@ -7,7 +7,7 @@
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
       <el-table-column align="center" label="用户名">
         <template slot-scope="scope">
-          {{ scope.row.name }}
+          <a :href="frontBaseUrl + 'user/' + scope.row.id" target="_blank">{{ scope.row.name }}</a>
         </template>
       </el-table-column>
       <el-table-column align="center" label="昵称">
@@ -32,7 +32,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
-          <el-button v-if="scope.row.user_type === 2" type="primary" size="small" @click="handleEdit(scope)">
+          <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
           </el-button>
           <el-button v-if="scope.row.user_type === 2" type="danger" size="small" @click="handleDelete(scope)">
@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import { deepClone } from '@/utils'
+import { deepClone, frontBaseUrl } from '@/utils'
 import { getUsers, addUser, deleteUser, updateUser } from '@/api/user'
 import Pagination from '@/components/Pagination'
 
@@ -85,6 +85,7 @@ export default {
   components: { Pagination },
   data() {
     return {
+      frontBaseUrl: frontBaseUrl(),
       listLoading: true,
       user: Object.assign({}, defaultUser),
       list: [],
