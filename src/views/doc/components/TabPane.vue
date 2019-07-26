@@ -135,12 +135,17 @@ export default {
       })
     },
     async handlePass(scope) {
-      this.dialogVisible = true
       this.dialogType = 'pass'
       this.docPublish = deepClone(scope.row)
-      this.$nextTick(function() {
-        this.$refs.reviewForm.clearValidate()
-      })
+      if (scope.row.type !== 'cv') {
+        this.dialogVisible = true
+        this.$nextTick(function() {
+          this.$refs.reviewForm.clearValidate()
+        })
+      }
+      if (scope.row.type === 'cv') {
+        this.doReview()
+      }
     },
     handleRefuse(scope) {
       this.dialogVisible = true
@@ -154,26 +159,29 @@ export default {
     async confirmSubmit() {
       this.$refs.reviewForm.validate(async(valid) => {
         if (valid) {
-          if (this.dialogType === 'pass') {
-            await pass(this.docPublish.id, { category_id: this.docPublish.docCategory })
-          } else {
-            await refuse(this.docPublish.id, { review_remarks: this.docPublish.review_remarks })
-          }
-          for (let index = 0; index < this.list.length; index++) {
-            if (this.list[index].id === this.docPublish.id) {
-              this.list.splice(index, 1)
-              break
-            }
-          }
-
-          this.dialogVisible = false
-          this.$message({
-            type: 'success',
-            message: '操作成功!'
-          })
+          this.doReview()
         } else {
           return false
         }
+      })
+    },
+    async doReview() {
+      if (this.dialogType === 'pass') {
+        await pass(this.docPublish.id, { category_id: this.docPublish.docCategory })
+      } else {
+        await refuse(this.docPublish.id, { review_remarks: this.docPublish.review_remarks })
+      }
+      for (let index = 0; index < this.list.length; index++) {
+        if (this.list[index].id === this.docPublish.id) {
+          this.list.splice(index, 1)
+          break
+        }
+      }
+
+      this.dialogVisible = false
+      this.$message({
+        type: 'success',
+        message: '操作成功!'
       })
     }
   }
