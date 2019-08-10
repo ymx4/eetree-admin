@@ -1,8 +1,14 @@
 <template>
   <div class="app-container">
-    <el-button type="primary" @click="handleAddUser">
-      添加用户
-    </el-button>
+    <div class="filter-container">
+      <!-- <el-input v-model="listQuery.q" placeholder="昵称" style="width: 200px;" class="filter-item" />
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getUsers">
+        搜索
+      </el-button> -->
+      <el-button class="filter-item" type="primary" @click="handleAddUser">
+        添加用户
+      </el-button>
+    </div>
 
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
       <el-table-column align="center" label="用户名">
@@ -94,7 +100,8 @@ export default {
       total: 0,
       listQuery: {
         page: 1,
-        limit: 10
+        limit: 10,
+        q: ''
       }
     }
   },
@@ -104,7 +111,10 @@ export default {
   methods: {
     async getUsers() {
       this.listLoading = true
-      const res = await getUsers({ page: this.listQuery.page })
+      const res = await getUsers({
+        page: this.listQuery.page,
+        q: this.listQuery.q
+      })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page

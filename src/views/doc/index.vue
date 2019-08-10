@@ -1,14 +1,14 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <!-- <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" /> -->
-      <el-select v-model="searchType" style="width: 140px" class="filter-item" @change="getDocs">
+      <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" />
+      <el-select v-model="listQuery.searchType" style="width: 140px" class="filter-item" @change="getDocs">
         <el-option label="所有" value="all" />
         <el-option label="置顶文档" value="top" />
       </el-select>
-      <!-- <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getDocs">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getDocs">
         搜索
-      </el-button> -->
+      </el-button>
     </div>
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
       <el-table-column align="center" label="作者">
@@ -21,9 +21,14 @@
           {{ scope.row.title }}
         </template>
       </el-table-column>
-      <el-table-column v-if="searchType === 'top'" align="center" label="置顶已展示">
+      <el-table-column v-if="listQuery.searchType === 'top'" align="center" label="置顶已展示">
         <template slot-scope="scope">
           {{ scope.row.docTop.view_count }}次
+        </template>
+      </el-table-column>
+      <el-table-column v-if="listQuery.searchType === 'top'" align="center" label="置顶已点击">
+        <template slot-scope="scope">
+          {{ scope.row.docTop.click_count }}次
         </template>
       </el-table-column>
       <el-table-column align="center" label="创建时间">
@@ -80,11 +85,11 @@
         <el-form-item label="分类页置顶">
           <el-switch v-model.number="docTop.page_category" :active-value="1" :inactive-value="0" />
         </el-form-item>
-        <el-form-item label="展示次数（0为不限制）">
-          <el-input v-model="docTop.threshold" placeholder="展示次数" />
+        <el-form-item label="点击阀值（0为不限制）">
+          <el-input v-model="docTop.threshold" placeholder="点击阀值" />
         </el-form-item>
-        <el-form-item v-if="docTop.view_count > 0" label="已展示次数">
-          <el-input v-model="docTop.view_count" :disabled="true" />
+        <el-form-item v-if="docTop.click_count > 0" label="已点击次数">
+          <el-input v-model="docTop.click_count" :disabled="true" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -117,7 +122,7 @@ const defaultTop = {
   page_index: 0,
   page_category: 0,
   threshold: 0,
-  view_count: 0,
+  click_count: 0,
   is_top: 1
 }
 
@@ -126,7 +131,6 @@ export default {
   components: { Pagination },
   data() {
     return {
-      searchType: 'all',
       frontBaseUrl: frontBaseUrl(),
       listLoading: true,
       doc: Object.assign({}, defaultDoc),
@@ -137,7 +141,8 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
-        title: ''
+        title: '',
+        searchType: 'all'
       },
       previewVisable: false,
       previewUrl: '',
@@ -155,7 +160,8 @@ export default {
       this.listLoading = true
       const res = await getDocs({
         page: this.listQuery.page,
-        sType: this.searchType
+        title: this.listQuery.title,
+        sType: this.listQuery.searchType
       })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
