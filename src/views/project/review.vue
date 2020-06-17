@@ -14,15 +14,15 @@
 import tabPane from './components/TabPane'
 
 export default {
-  name: 'CommentList',
+  name: 'ProjectReview',
   components: { tabPane },
   data() {
     return {
       tabMapOptions: [
-        { label: '文档', key: 'doc' },
-        { label: '项目', key: 'project' }
+        { label: '待审核', key: 'review' },
+        { label: '已拒绝', key: 'refuse' }
       ],
-      activeName: 'doc'
+      activeName: 'review'
     }
   }
 }
