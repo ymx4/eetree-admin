@@ -91,7 +91,8 @@ export const mapRoutes = {
   user_list: () => import('@/views/user/list'),
   project_index: () => import('@/views/project/index'),
   project_review: () => import('@/views/project/review'),
-  platform_list: () => import('@/views/platform/list')
+  platform_list: () => import('@/views/platform/list'),
+  product_list: () => import('@/views/product/list')
 }
 
 const createRouter = () => new Router({
