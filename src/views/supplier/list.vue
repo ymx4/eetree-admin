@@ -1,8 +1,14 @@
 <template>
   <div class="app-container">
-    <el-button type="primary" @click="handleAddPlatform">
-      添加平台
-    </el-button>
+    <div class="filter-container">
+      <el-input v-model="listQuery.title" placeholder="名称" style="width: 200px;" class="filter-item" />
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getSuppliers">
+        搜索
+      </el-button>
+      <el-button class="filter-item" type="primary" @click="handleAddSupplier">
+        添加
+      </el-button>
+    </div>
 
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
       <el-table-column align="center" label="名称">
@@ -10,9 +16,9 @@
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="排序">
+      <el-table-column align="center" label="链接">
         <template slot-scope="scope">
-          {{ scope.row.order }}
+          {{ scope.row.link }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作">
@@ -28,12 +34,15 @@
     </el-table>
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'添加'">
-      <el-form :model="platform" label-width="160px" label-position="left">
+      <el-form :model="supplier" label-width="160px" label-position="left">
         <el-form-item label="名称">
-          <el-input v-model="platform.name" placeholder="名称" />
+          <el-input v-model="supplier.name" placeholder="名称" />
         </el-form-item>
-        <el-form-item label="排序">
-          <el-input v-model="platform.order" placeholder="排序" />
+        <el-form-item label="图片">
+          <Upload :fkey.sync="supplier.cloud.fkey" :crop-opt="cropOpt" />
+        </el-form-item>
+        <el-form-item label="链接">
+          <el-input v-model="supplier.link" placeholder="链接" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -45,48 +54,73 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getSuppliers" />
+
   </div>
 </template>
 
 <script>
 import { deepClone } from '@/utils'
-import { getPlatforms, addPlatform, deletePlatform, updatePlatform } from '@/api/platform'
+import { getSuppliers, addSupplier, deleteSupplier, updateSupplier } from '@/api/supplier'
+import Pagination from '@/components/Pagination'
+import Upload from '@/components/Upload/Crop'
 
-const defaultPlatform = {
+const defaultSupplier = {
   name: '',
-  order: 0
+  link: '',
+  cloud: {
+    fkey: ''
+  }
 }
 
 export default {
-  name: 'PlatformList',
+  name: 'SupplierList',
+  components: { Pagination, Upload },
   data() {
     return {
       listLoading: true,
-      platform: Object.assign({}, defaultPlatform),
+      supplier: Object.assign({}, defaultSupplier),
       list: [],
       dialogVisible: false,
-      dialogType: 'new'
+      dialogType: 'new',
+      total: 0,
+      listQuery: {
+        page: 1,
+        limit: 10,
+        title: ''
+      },
+      cropOpt: {
+        width: 300,
+        height: 300
+      }
     }
   },
   created() {
-    this.getPlatforms()
+    this.getSuppliers()
   },
   methods: {
-    async getPlatforms() {
+    async getSuppliers() {
       this.listLoading = true
-      const res = await getPlatforms()
+      const res = await getSuppliers({
+        page: this.listQuery.page,
+        title: this.listQuery.title
+      })
       this.list = res.data
+      this.listQuery.page = res.meta.current_page
+      this.listQuery.limit = res.meta.per_page
+      this.total = res.meta.total
       this.listLoading = false
     },
-    handleAddPlatform() {
-      this.platform = Object.assign({}, defaultPlatform)
+    handleAddSupplier() {
+      this.supplier = deepClone(defaultSupplier)
       this.dialogType = 'new'
       this.dialogVisible = true
     },
     handleEdit(scope) {
       this.dialogType = 'edit'
       this.dialogVisible = true
-      this.platform = deepClone(scope.row)
+      this.supplier = deepClone(scope.row)
     },
     handleDelete({ $index, row }) {
       this.$confirm('确定要删除吗', '警告', {
@@ -95,7 +129,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await deletePlatform(row.id)
+          await deleteSupplier(row.id)
           this.list.splice($index, 1)
           this.$message({
             type: 'success',
@@ -104,34 +138,28 @@ export default {
         })
         .catch(err => { console.error(err) })
     },
-    fields(platform) {
+    fields(supplier) {
       return {
-        name: platform.name,
-        order: platform.order
+        name: supplier.name,
+        link: supplier.link,
+        fkey: supplier.cloud.fkey
       }
     },
     async confirmSubmit() {
       const isEdit = this.dialogType === 'edit'
       if (isEdit) {
-        await updatePlatform(this.platform.id, this.fields(this.platform))
+        await updateSupplier(this.supplier.id, this.fields(this.supplier))
         for (let index = 0; index < this.list.length; index++) {
-          if (this.list[index].id === this.platform.id) {
-            this.list.splice(index, 1, Object.assign({}, this.platform))
+          if (this.list[index].id === this.supplier.id) {
+            this.list.splice(index, 1, Object.assign({}, this.supplier))
             break
           }
         }
       } else {
-        const { data } = await addPlatform(this.fields(this.platform))
-        this.platform.id = data.id
-        this.list.push(this.platform)
+        const { data } = await addSupplier(this.fields(this.supplier))
+        this.supplier.id = data.id
+        this.list.push(this.supplier)
       }
-      this.list.sort(function(a, b) {
-        let sort = a.order - b.order
-        if (sort === 0) {
-          sort = a.id - b.id
-        }
-        return sort
-      })
 
       this.dialogVisible = false
       this.$notify({

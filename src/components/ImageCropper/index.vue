@@ -111,6 +111,7 @@
 /* eslint-disable */
 'use strict'
 import request from '@/utils/request'
+import axios from 'axios'
 import language from './utils/language.js'
 import mimes from './utils/mimes.js'
 import data2blob from './utils/data2blob.js'
@@ -194,7 +195,11 @@ export default {
     withCredentials: {
       type: Boolean,
       'default': false
-    }
+    },
+    storage: {
+      type: String,
+      'default': ''
+    },
   },
   data() {
     const that = this
@@ -280,7 +285,8 @@ export default {
         minHeight: 0,
         naturalWidth: 0, // 原宽
         naturalHeight: 0
-      }
+      },
+      sourceImgName: '',
     }
   },
   computed: {
@@ -478,6 +484,7 @@ export default {
         that.startCrop()
       }
       fr.readAsDataURL(file)
+      that.sourceImgName = file.name
     },
     // 剪裁前准备工作
     startCrop() {
@@ -824,9 +831,15 @@ export default {
       that.reset()
       that.loading = 1
       that.setStep(3)
-      request({
+      let myrequest = request
+      if (this.storage === 'qiniu') {
+        myrequest = axios
+        fmData.append('x:name', this.sourceImgName)
+      }
+      myrequest({
         url,
         method: 'post',
+        headers: {'Content-Type':'multipart/form-data'},
         data: fmData
       }).then(resData => {
         that.loading = 2

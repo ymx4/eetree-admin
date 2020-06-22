@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" />
+      <el-input v-model="listQuery.title" placeholder="名称" style="width: 200px;" class="filter-item" />
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getProducts">
         搜索
       </el-button>
@@ -39,7 +39,17 @@
           <el-input v-model="product.name" placeholder="名称" />
         </el-form-item>
         <el-form-item label="图片">
-          <Upload v-model="product.image" />
+          <Upload :fkey.sync="product.cloud.fkey" :crop-opt="cropOpt" />
+        </el-form-item>
+        <el-form-item label="厂商">
+          <el-select v-model="product.supplier_id" filterable :filter-method="getSuppliers">
+            <el-option
+              v-for="supplier in suppliers"
+              :key="supplier.id"
+              :label="supplier.name"
+              :value="supplier.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="类型">
           <el-select v-model="product.type">
@@ -73,15 +83,19 @@
 <script>
 import { deepClone } from '@/utils'
 import { getProducts, addProduct, deleteProduct, updateProduct } from '@/api/product'
+import { getSuppliers } from '@/api/supplier'
 import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
 import Upload from '@/components/Upload/Crop'
 
 const defaultProduct = {
   name: '',
-  image: '',
+  supplier_id: 0,
   type: 0,
-  link: ''
+  link: '',
+  cloud: {
+    fkey: ''
+  }
 }
 
 export default {
@@ -93,6 +107,8 @@ export default {
       product: Object.assign({}, defaultProduct),
       list: [],
       productTypes: [],
+      suppliers: [],
+      supplierReset: true,
       dialogVisible: false,
       dialogType: 'new',
       total: 0,
@@ -100,20 +116,25 @@ export default {
         page: 1,
         limit: 10,
         title: ''
+      },
+      cropOpt: {
+        width: 300,
+        height: 300
       }
     }
   },
   created() {
     this.getProducts()
     this.getProductTypes()
+    this.getSuppliers()
   },
   methods: {
     async getProducts() {
       this.listLoading = true
-      const res = await getProducts(({
+      const res = await getProducts({
         page: this.listQuery.page,
         title: this.listQuery.title
-      }))
+      })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
@@ -124,15 +145,30 @@ export default {
       const res = await getEnums('product.types')
       this.productTypes = res.data
     },
+    async getSuppliers(title) {
+      if (!title && !this.supplierReset) {
+        return
+      }
+      const res = await getSuppliers({ title })
+      this.suppliers = res.data
+      if (title) {
+        this.supplierReset = true
+      } else {
+        this.supplierReset = false
+        this.suppliers.unshift({ id: 0, name: '无' })
+      }
+    },
     handleAddProduct() {
-      this.product = Object.assign({}, defaultProduct)
+      this.product = deepClone(defaultProduct)
       this.dialogType = 'new'
+      this.getSuppliers()
       this.dialogVisible = true
     },
     handleEdit(scope) {
       this.dialogType = 'edit'
-      this.dialogVisible = true
+      this.getSuppliers()
       this.product = deepClone(scope.row)
+      this.dialogVisible = true
     },
     handleDelete({ $index, row }) {
       this.$confirm('确定要删除吗', '警告', {
@@ -153,8 +189,10 @@ export default {
     fields(product) {
       return {
         name: product.name,
+        supplier_id: product.supplier_id,
         type: product.type,
-        link: product.link
+        link: product.link,
+        fkey: product.cloud.fkey
       }
     },
     async confirmSubmit() {

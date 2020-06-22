@@ -1,19 +1,28 @@
 <template>
   <div class="upload-container">
-    <el-button type="primary" icon="el-icon-upload" style="position: absolute;bottom: 15px;margin-left: 40px;" @click="imagecropperShow=true">
-      Change Avatar
+    <el-button type="primary" icon="el-icon-upload" style="margin-left:10px;" @click="imagecropperShow=true">
+      上传
     </el-button>
 
     <image-cropper
       v-show="imagecropperShow"
       :key="imagecropperKey"
-      :width="300"
-      :height="300"
-      url="https://httpbin.org/post"
-      lang-type="en"
+      :width="cropOpt.width"
+      :height="cropOpt.height"
+      :no-circle="cropOpt.noCircle"
+      :url="cropOpt.url"
+      :storage="cropOpt.storage"
+      :params="params"
+      field="file"
+      lang-type="zh"
       @close="close"
       @crop-upload-success="cropSuccess"
     />
+    <div class="image-preview">
+      <div v-show="imageUrl.length>1" class="image-preview-wrapper">
+        <img :src="imageUrl">
+      </div>
+    </div>
   </div>
 </template>
 
@@ -21,40 +30,59 @@
 import { getToken } from '@/api/qiniu'
 import ImageCropper from '@/components/ImageCropper'
 
+const defaultCropOpt = {
+  width: 300,
+  height: 300,
+  noCircle: true,
+  url: 'http://upload-z1.qiniup.com',
+  storage: 'qiniu'
+}
+
 export default {
   name: 'CropUpload',
   components: { ImageCropper },
   props: {
-    value: {
+    fkey: {
       type: String,
       default: ''
+    },
+    // 剪裁图片的宽
+    cropOpt: {
+      type: Object,
+      'default': defaultCropOpt
     }
   },
   data() {
     return {
-      tempUrl: '',
-      token: '',
+      params: {},
       imagecropperShow: false,
-      imagecropperKey: 0
+      imagecropperKey: 0,
+      qnUrl: ''
     }
   },
   computed: {
     imageUrl() {
-      return this.value
+      return this.fkey && this.fkey.length > 0 ? this.qnUrl + '/' + this.fkey : ''
     }
   },
   created() {
     this.getToken()
+    for (const i in defaultCropOpt) {
+      if (!this.cropOpt[i]) {
+        this.cropOpt[i] = defaultCropOpt[i]
+      }
+    }
   },
   methods: {
     async getToken() {
       const res = await getToken()
-      this.token = res.data.token
+      this.params.token = res.data.token
+      this.qnUrl = res.data.qnUrl
     },
     cropSuccess(resData) {
       this.imagecropperShow = false
       this.imagecropperKey = this.imagecropperKey + 1
-      this.value = resData.files.avatar
+      this.$emit('update:fkey', resData.key)
     },
     close() {
       this.imagecropperShow = false
@@ -79,7 +107,6 @@ export default {
             position: relative;
             border: 1px dashed #d9d9d9;
             float: left;
-            margin-left: 50px;
             .image-preview-wrapper {
                 position: relative;
                 width: 100%;
