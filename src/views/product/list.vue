@@ -61,6 +61,14 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="简介">
+          <el-input
+            v-model="product.description"
+            type="textarea"
+            :rows="2"
+            placeholder="简介"
+          />
+        </el-form-item>
         <el-form-item label="链接">
           <el-input v-model="product.link" placeholder="链接" />
         </el-form-item>
@@ -92,6 +100,7 @@ const defaultProduct = {
   name: '',
   supplier_id: 0,
   type: 0,
+  description: '',
   link: '',
   cloud: {
     fkey: ''
@@ -191,6 +200,7 @@ export default {
         name: product.name,
         supplier_id: product.supplier_id,
         type: product.type,
+        description: product.description,
         link: product.link,
         fkey: product.cloud.fkey
       }
