@@ -39,9 +39,9 @@
           <el-select v-model="draftVersion.platform_id" placeholder="请选择">
             <el-option
               v-for="platform in platforms"
-              :key="platform.value"
-              :label="platform.label"
-              :value="platform.value"
+              :key="platform.id"
+              :label="platform.name"
+              :value="platform.id"
             />
           </el-select>
         </el-form-item>
@@ -119,7 +119,8 @@ export default {
       this.listLoading = false
     },
     async getPlatforms() {
-      this.platforms = await getPlatforms()
+      const res = await getPlatforms()
+      this.platforms = res.data
     },
     handlePreview(scope) {
       publishPreview(scope.row.id).then(res => {
