@@ -13,6 +13,7 @@
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
       <el-table-column align="center" label="用户名">
         <template slot-scope="scope">
+          <el-tag v-if="scope.row.is_admin">{{ scope.row.user_type_label }}</el-tag>
           <a :href="frontBaseUrl + 'user/' + scope.row.id" target="_blank">{{ scope.row.name }}</a>
         </template>
       </el-table-column>
@@ -41,7 +42,7 @@
           <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
           </el-button>
-          <el-button v-if="scope.row.user_type === 2" type="danger" size="small" @click="handleDelete(scope)">
+          <el-button v-if="scope.row.can_delete" type="danger" size="small" @click="handleDelete(scope)">
             删除
           </el-button>
         </template>
@@ -57,6 +58,16 @@
         </el-form-item>
         <el-form-item label="昵称">
           <el-input v-model="user.nickname" placeholder="昵称" />
+        </el-form-item>
+        <el-form-item v-if="!user.is_super && dialogType==='edit'" label="类型">
+          <el-select v-model="user.user_type">
+            <el-option
+              v-for="userType in userTypes"
+              :key="userType.k"
+              :label="userType.l"
+              :value="userType.k"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="密码">
           <el-input v-model="user.password" type="password" placeholder="密码" />
@@ -78,12 +89,14 @@
 <script>
 import { deepClone, frontBaseUrl } from '@/utils'
 import { getUsers, addUser, deleteUser, updateUser } from '@/api/user'
+import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
 
 const defaultUser = {
   name: '',
   nickname: '',
-  password: ''
+  password: '',
+  user_type: 0
 }
 
 export default {
@@ -102,11 +115,13 @@ export default {
         page: 1,
         limit: 10,
         q: ''
-      }
+      },
+      userTypes: []
     }
   },
   created() {
     this.getUsers()
+    this.getUserTypes()
   },
   methods: {
     async getUsers() {
@@ -120,6 +135,14 @@ export default {
       this.listQuery.limit = res.meta.per_page
       this.total = res.meta.total
       this.listLoading = false
+    },
+    async getUserTypes() {
+      const res = await getEnums('user.types')
+      res.data.forEach(element => {
+        if (element.k !== 1) {
+          this.userTypes.push(element)
+        }
+      })
     },
     handleAddUser() {
       this.user = Object.assign({}, defaultUser)
@@ -151,13 +174,15 @@ export default {
       return {
         name: user.name,
         nickname: user.nickname,
-        password: user.password
+        password: user.password,
+        user_type: user.user_type
       }
     },
     async confirmSubmit() {
       const isEdit = this.dialogType === 'edit'
       if (isEdit) {
-        await updateUser(this.user.id, this.fields(this.user))
+        const { data } = await updateUser(this.user.id, this.fields(this.user))
+        this.user = data
         for (let index = 0; index < this.list.length; index++) {
           if (this.list[index].id === this.user.id) {
             this.list.splice(index, 1, Object.assign({}, this.user))
