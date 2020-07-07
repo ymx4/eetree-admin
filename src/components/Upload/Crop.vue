@@ -19,7 +19,7 @@
       @crop-upload-success="cropSuccess"
     />
     <div class="image-preview">
-      <div v-show="imageUrl.length>1" class="image-preview-wrapper">
+      <div v-show="imageUrl && imageUrl.length > 1" class="image-preview-wrapper">
         <img :src="imageUrl">
       </div>
     </div>
@@ -34,7 +34,7 @@ const defaultCropOpt = {
   width: 300,
   height: 300,
   noCircle: true,
-  url: 'http://upload-z1.qiniup.com',
+  url: 'http://up-z2.qiniup.com',
   storage: 'qiniu'
 }
 
@@ -42,7 +42,11 @@ export default {
   name: 'CropUpload',
   components: { ImageCropper },
   props: {
-    fkey: {
+    imageUrl: {
+      type: String,
+      default: ''
+    },
+    fileId: {
       type: String,
       default: ''
     },
@@ -58,11 +62,6 @@ export default {
       imagecropperShow: false,
       imagecropperKey: 0,
       qnUrl: ''
-    }
-  },
-  computed: {
-    imageUrl() {
-      return this.fkey && this.fkey.length > 0 ? this.qnUrl + '/' + this.fkey : ''
     }
   },
   created() {
@@ -82,7 +81,8 @@ export default {
     cropSuccess(resData) {
       this.imagecropperShow = false
       this.imagecropperKey = this.imagecropperKey + 1
-      this.$emit('update:fkey', resData.key)
+      this.imageUrl = resData.data.url
+      this.$emit('update:fileId', resData.data.file_id)
     },
     close() {
       this.imagecropperShow = false

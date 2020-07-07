@@ -1,19 +1,24 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.title" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getSuppliers">
+      <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" />
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getRecommends">
         搜索
       </el-button>
-      <el-button class="filter-item" type="primary" @click="handleAddSupplier">
+      <el-button class="filter-item" type="primary" @click="handleAddRecommend">
         添加
       </el-button>
     </div>
 
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
-      <el-table-column align="center" label="名称">
+      <el-table-column align="center" label="标题">
         <template slot-scope="scope">
-          {{ scope.row.name }}
+          {{ scope.row.title }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="分组">
+        <template slot-scope="scope">
+          {{ scope.row.area_label }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="链接">
@@ -34,15 +39,33 @@
     </el-table>
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'添加'">
-      <el-form :model="supplier" label-width="160px" label-position="left">
-        <el-form-item label="名称">
-          <el-input v-model="supplier.name" placeholder="名称" />
+      <el-form :model="recommend" label-width="160px" label-position="left">
+        <el-form-item label="标题">
+          <el-input v-model="recommend.title" placeholder="标题" />
+        </el-form-item>
+        <el-form-item label="分组">
+          <el-select v-model="recommend.area_id">
+            <el-option
+              v-for="area in areas"
+              :key="area.k"
+              :label="area.l"
+              :value="area.k"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input
+            v-model="recommend.description"
+            type="textarea"
+            :rows="2"
+            placeholder="描述"
+          />
         </el-form-item>
         <el-form-item label="图片">
-          <Upload :file-id.sync="supplier.cloud.file_id" image-url="supplier.cloud.url" :crop-opt="cropOpt" />
+          <Upload :fkey.sync="recommend.cloud.fkey" :crop-opt="cropOpt" />
         </el-form-item>
         <el-form-item label="链接">
-          <el-input v-model="supplier.link" placeholder="链接" />
+          <el-input v-model="recommend.link" placeholder="链接" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -55,33 +78,35 @@
       </div>
     </el-dialog>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getSuppliers" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getRecommends" />
 
   </div>
 </template>
 
 <script>
 import { deepClone } from '@/utils'
-import { getSuppliers, addSupplier, deleteSupplier, updateSupplier } from '@/api/supplier'
+import { getRecommends, addRecommend, deleteRecommend, updateRecommend } from '@/api/recommend'
+import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
 import Upload from '@/components/Upload/Crop'
 
-const defaultSupplier = {
-  name: '',
+const defaultRecommend = {
+  title: '',
+  area_id: 0,
+  description: '',
   link: '',
   cloud: {
-    file_id: '',
-    url: ''
+    fkey: ''
   }
 }
 
 export default {
-  name: 'SupplierList',
+  name: 'RecommendList',
   components: { Pagination, Upload },
   data() {
     return {
       listLoading: true,
-      supplier: Object.assign({}, defaultSupplier),
+      recommend: Object.assign({}, defaultRecommend),
       list: [],
       dialogVisible: false,
       dialogType: 'new',
@@ -94,16 +119,18 @@ export default {
       cropOpt: {
         width: 300,
         height: 300
-      }
+      },
+      areas: []
     }
   },
   created() {
-    this.getSuppliers()
+    this.getRecommends()
+    this.getAreas()
   },
   methods: {
-    async getSuppliers() {
+    async getRecommends() {
       this.listLoading = true
-      const res = await getSuppliers({
+      const res = await getRecommends({
         page: this.listQuery.page,
         title: this.listQuery.title
       })
@@ -113,15 +140,19 @@ export default {
       this.total = res.meta.total
       this.listLoading = false
     },
-    handleAddSupplier() {
-      this.supplier = deepClone(defaultSupplier)
+    async getAreas() {
+      const res = await getEnums('recommend.area')
+      this.areas = res.data
+    },
+    handleAddRecommend() {
+      this.recommend = deepClone(defaultRecommend)
       this.dialogType = 'new'
       this.dialogVisible = true
     },
     handleEdit(scope) {
       this.dialogType = 'edit'
       this.dialogVisible = true
-      this.supplier = deepClone(scope.row)
+      this.recommend = deepClone(scope.row)
     },
     handleDelete({ $index, row }) {
       this.$confirm('确定要删除吗', '警告', {
@@ -130,7 +161,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await deleteSupplier(row.id)
+          await deleteRecommend(row.id)
           this.list.splice($index, 1)
           this.$message({
             type: 'success',
@@ -139,27 +170,28 @@ export default {
         })
         .catch(err => { console.error(err) })
     },
-    fields(supplier) {
+    fields(recommend) {
       return {
-        name: supplier.name,
-        link: supplier.link,
-        file_id: supplier.cloud.file_id
+        title: recommend.title,
+        description: recommend.description,
+        link: recommend.link,
+        fkey: recommend.cloud.fkey
       }
     },
     async confirmSubmit() {
       const isEdit = this.dialogType === 'edit'
       if (isEdit) {
-        await updateSupplier(this.supplier.id, this.fields(this.supplier))
+        await updateRecommend(this.recommend.id, this.fields(this.recommend))
         for (let index = 0; index < this.list.length; index++) {
-          if (this.list[index].id === this.supplier.id) {
-            this.list.splice(index, 1, Object.assign({}, this.supplier))
+          if (this.list[index].id === this.recommend.id) {
+            this.list.splice(index, 1, Object.assign({}, this.recommend))
             break
           }
         }
       } else {
-        const { data } = await addSupplier(this.fields(this.supplier))
-        this.supplier.id = data.id
-        this.list.push(this.supplier)
+        const { data } = await addRecommend(this.fields(this.recommend))
+        this.recommend.id = data.id
+        this.list.push(this.recommend)
       }
 
       this.dialogVisible = false
