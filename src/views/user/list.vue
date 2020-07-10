@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <!-- <el-input v-model="listQuery.q" placeholder="昵称" style="width: 200px;" class="filter-item" />
-      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getUsers">
+      <el-input v-model="listQuery.q" placeholder="昵称" style="width: 200px;" class="filter-item" />
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
-      </el-button> -->
+      </el-button>
       <el-button class="filter-item" type="primary" @click="handleAddUser">
         添加用户
       </el-button>
@@ -124,6 +124,10 @@ export default {
     this.getUserTypes()
   },
   methods: {
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getUsers()
+    },
     async getUsers() {
       this.listLoading = true
       const res = await getUsers({

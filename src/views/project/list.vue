@@ -2,11 +2,11 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.searchType" style="width: 140px" class="filter-item" @change="getProjects">
+      <el-select v-model="listQuery.searchType" style="width: 140px" class="filter-item">
         <el-option label="所有" value="all" />
         <el-option label="置顶项目" value="top" />
       </el-select>
-      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getProjects">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
     </div>
@@ -148,6 +148,10 @@ export default {
     this.getProjects()
   },
   methods: {
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getProjects()
+    },
     async getProjects() {
       this.listLoading = true
       const res = await getProjects({

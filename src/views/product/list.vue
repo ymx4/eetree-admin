@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.title" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getProducts">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
       <el-button class="filter-item" type="primary" @click="handleAddProduct">
@@ -39,7 +39,7 @@
           <el-input v-model="product.name" placeholder="名称" />
         </el-form-item>
         <el-form-item label="图片">
-          <Upload :fkey.sync="product.cloud.fkey" :crop-opt="cropOpt" />
+          <Upload v-model="product.cloud_id" :cloud="product.cloud" :crop-opt="cropOpt" />
         </el-form-item>
         <el-form-item label="厂商">
           <el-select v-model="product.supplier_id" filterable :filter-method="getSuppliers">
@@ -102,8 +102,9 @@ const defaultProduct = {
   type: 0,
   description: '',
   link: '',
+  cloud_id: 0,
   cloud: {
-    fkey: ''
+    url: ''
   }
 }
 
@@ -138,6 +139,10 @@ export default {
     this.getSuppliers()
   },
   methods: {
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getProducts()
+    },
     async getProducts() {
       this.listLoading = true
       const res = await getProducts({
@@ -202,7 +207,7 @@ export default {
         type: product.type,
         description: product.description,
         link: product.link,
-        fkey: product.cloud.fkey
+        cloud_id: product.cloud_id
       }
     },
     async confirmSubmit() {

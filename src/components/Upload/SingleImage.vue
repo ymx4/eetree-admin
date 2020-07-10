@@ -4,10 +4,11 @@
       :data="dataObj"
       :multiple="false"
       :show-file-list="false"
+      :before-upload="beforeUpload"
       :on-success="handleImageSuccess"
       class="image-uploader"
       drag
-      action="https://httpbin.org/post"
+      action="https://up-z2.qiniup.com"
     >
       <i class="el-icon-upload" />
       <div class="el-upload__text">
@@ -15,8 +16,8 @@
       </div>
     </el-upload>
     <div class="image-preview">
-      <div v-show="imageUrl.length>1" class="image-preview-wrapper">
-        <img :src="imageUrl">
+      <div v-show="cloud.url.length>1" class="image-preview-wrapper">
+        <img :src="cloud.url">
         <div class="image-preview-action">
           <i class="el-icon-delete" @click="rmImage" />
         </div>
@@ -31,41 +32,38 @@ import { getToken } from '@/api/qiniu'
 export default {
   name: 'SingleImageUpload',
   props: {
+    cloud: {
+      type: Object,
+      default: function() {
+        return { url: '' }
+      }
+    },
     value: {
-      type: String,
-      default: ''
+      type: Number,
+      default: 0
     }
   },
   data() {
     return {
-      tempUrl: '',
-      dataObj: { token: '', key: '' }
-    }
-  },
-  computed: {
-    imageUrl() {
-      return this.value
+      cloud_id: 0,
+      dataObj: { token: '' }
     }
   },
   methods: {
     rmImage() {
-      this.emitInput('')
+      this.$emit('input', 0)
+      this.cloud.url = ''
     },
-    emitInput(val) {
-      this.$emit('input', val)
+    handleImageSuccess(response) {
+      this.cloud.url = response.data.url
+      this.$emit('input', response.data.cloud_id)
     },
-    handleImageSuccess() {
-      this.emitInput(this.tempUrl)
-    },
-    beforeUpload() {
+    beforeUpload(file) {
       const _self = this
       return new Promise((resolve, reject) => {
         getToken().then(response => {
-          const key = response.data.qiniu_key
-          const token = response.data.qiniu_token
-          _self._data.dataObj.token = token
-          _self._data.dataObj.key = key
-          this.tempUrl = response.data.qiniu_url
+          _self.dataObj.token = response.data.token
+          _self.dataObj['x:name'] = file.name
           resolve(true)
         }).catch(err => {
           console.log(err)
@@ -84,12 +82,13 @@ export default {
         position: relative;
         @include clearfix;
         .image-uploader {
-            width: 60%;
+            width: 40%;
             float: left;
         }
         .image-preview {
-            width: 200px;
-            height: 200px;
+            width: 50%;
+            height: auto;
+            min-height: 200px;
             position: relative;
             border: 1px dashed #d9d9d9;
             float: left;
