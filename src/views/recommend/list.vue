@@ -2,6 +2,15 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" />
+      <el-select v-model="listQuery.area_id" style="width: 140px" class="filter-item">
+        <el-option label="所有分组" value="-1" />
+        <el-option
+          v-for="area in areas"
+          :key="area.k"
+          :label="area.l"
+          :value="area.k"
+        />
+      </el-select>
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getRecommends">
         搜索
       </el-button>
@@ -53,6 +62,12 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="图片">
+          <Upload v-model="recommend.cloud_id" :cloud="recommend.cloud" />
+        </el-form-item>
+        <el-form-item label="链接">
+          <el-input v-model="recommend.link" placeholder="链接" />
+        </el-form-item>
         <el-form-item label="描述">
           <el-input
             v-model="recommend.description"
@@ -60,12 +75,6 @@
             :rows="2"
             placeholder="描述"
           />
-        </el-form-item>
-        <el-form-item label="图片">
-          <Upload :fkey.sync="recommend.cloud.fkey" :crop-opt="cropOpt" />
-        </el-form-item>
-        <el-form-item label="链接">
-          <el-input v-model="recommend.link" placeholder="链接" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -88,15 +97,16 @@ import { deepClone } from '@/utils'
 import { getRecommends, addRecommend, deleteRecommend, updateRecommend } from '@/api/recommend'
 import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
-import Upload from '@/components/Upload/Crop'
+import Upload from '@/components/Upload/SingleImage'
 
 const defaultRecommend = {
   title: '',
   area_id: 0,
   description: '',
   link: '',
+  cloud_id: 0,
   cloud: {
-    fkey: ''
+    url: ''
   }
 }
 
@@ -114,11 +124,8 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
-        title: ''
-      },
-      cropOpt: {
-        width: 300,
-        height: 300
+        title: '',
+        area_id: '-1'
       },
       areas: []
     }
@@ -132,7 +139,8 @@ export default {
       this.listLoading = true
       const res = await getRecommends({
         page: this.listQuery.page,
-        title: this.listQuery.title
+        title: this.listQuery.title,
+        area_id: this.listQuery.area_id
       })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
@@ -173,15 +181,17 @@ export default {
     fields(recommend) {
       return {
         title: recommend.title,
+        area_id: recommend.area_id,
         description: recommend.description,
         link: recommend.link,
-        fkey: recommend.cloud.fkey
+        cloud_id: recommend.cloud_id
       }
     },
     async confirmSubmit() {
       const isEdit = this.dialogType === 'edit'
       if (isEdit) {
-        await updateRecommend(this.recommend.id, this.fields(this.recommend))
+        const { data } = await updateRecommend(this.recommend.id, this.fields(this.recommend))
+        this.recommend = data
         for (let index = 0; index < this.list.length; index++) {
           if (this.list[index].id === this.recommend.id) {
             this.list.splice(index, 1, Object.assign({}, this.recommend))
@@ -190,7 +200,7 @@ export default {
         }
       } else {
         const { data } = await addRecommend(this.fields(this.recommend))
-        this.recommend.id = data.id
+        this.recommend = data
         this.list.push(this.recommend)
       }
 

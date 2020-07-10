@@ -39,7 +39,7 @@
           <el-input v-model="product.name" placeholder="名称" />
         </el-form-item>
         <el-form-item label="图片">
-          <Upload :fkey.sync="product.cloud.fkey" :crop-opt="cropOpt" />
+          <Upload v-model="product.cloud_id" :cloud="product.cloud" :crop-opt="cropOpt" />
         </el-form-item>
         <el-form-item label="厂商">
           <el-select v-model="product.supplier_id" filterable :filter-method="getSuppliers">
@@ -102,8 +102,9 @@ const defaultProduct = {
   type: 0,
   description: '',
   link: '',
+  cloud_id: 0,
   cloud: {
-    fkey: ''
+    url: ''
   }
 }
 
@@ -202,7 +203,7 @@ export default {
         type: product.type,
         description: product.description,
         link: product.link,
-        fkey: product.cloud.fkey
+        cloud_id: product.cloud_id
       }
     },
     async confirmSubmit() {

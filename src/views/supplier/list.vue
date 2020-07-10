@@ -39,7 +39,7 @@
           <el-input v-model="supplier.name" placeholder="名称" />
         </el-form-item>
         <el-form-item label="图片">
-          <Upload :file-id.sync="supplier.cloud.file_id" image-url="supplier.cloud.url" :crop-opt="cropOpt" />
+          <Upload v-model="supplier.cloud_id" :cloud="supplier.cloud" :crop-opt="cropOpt" />
         </el-form-item>
         <el-form-item label="链接">
           <el-input v-model="supplier.link" placeholder="链接" />
@@ -69,8 +69,8 @@ import Upload from '@/components/Upload/Crop'
 const defaultSupplier = {
   name: '',
   link: '',
+  cloud_id: 0,
   cloud: {
-    file_id: '',
     url: ''
   }
 }
@@ -143,7 +143,7 @@ export default {
       return {
         name: supplier.name,
         link: supplier.link,
-        file_id: supplier.cloud.file_id
+        cloud_id: supplier.cloud_id
       }
     },
     async confirmSubmit() {

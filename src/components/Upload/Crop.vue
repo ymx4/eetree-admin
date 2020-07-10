@@ -1,6 +1,6 @@
 <template>
   <div class="upload-container">
-    <el-button type="primary" icon="el-icon-upload" style="margin-left:10px;" @click="imagecropperShow=true">
+    <el-button type="primary" icon="el-icon-upload" @click="imagecropperShow=true">
       上传
     </el-button>
 
@@ -19,8 +19,11 @@
       @crop-upload-success="cropSuccess"
     />
     <div class="image-preview">
-      <div v-show="imageUrl && imageUrl.length > 1" class="image-preview-wrapper">
-        <img :src="imageUrl">
+      <div v-show="cloud.url && cloud.url.length > 1" class="image-preview-wrapper">
+        <img :src="cloud.url">
+        <div class="image-preview-action">
+          <i class="el-icon-delete" @click="rmImage" />
+        </div>
       </div>
     </div>
   </div>
@@ -34,7 +37,7 @@ const defaultCropOpt = {
   width: 300,
   height: 300,
   noCircle: true,
-  url: 'http://up-z2.qiniup.com',
+  url: 'https://up-z2.qiniup.com',
   storage: 'qiniu'
 }
 
@@ -42,13 +45,15 @@ export default {
   name: 'CropUpload',
   components: { ImageCropper },
   props: {
-    imageUrl: {
-      type: String,
-      default: ''
+    cloud: {
+      type: Object,
+      default: function() {
+        return { url: '' }
+      }
     },
-    fileId: {
-      type: String,
-      default: ''
+    value: {
+      type: Number,
+      default: 0
     },
     // 剪裁图片的宽
     cropOpt: {
@@ -60,8 +65,7 @@ export default {
     return {
       params: {},
       imagecropperShow: false,
-      imagecropperKey: 0,
-      qnUrl: ''
+      imagecropperKey: 0
     }
   },
   created() {
@@ -73,16 +77,19 @@ export default {
     }
   },
   methods: {
+    rmImage() {
+      this.$emit('input', 0)
+      this.cloud.url = ''
+    },
     async getToken() {
       const res = await getToken()
       this.params.token = res.data.token
-      this.qnUrl = res.data.qnUrl
     },
     cropSuccess(resData) {
       this.imagecropperShow = false
       this.imagecropperKey = this.imagecropperKey + 1
-      this.imageUrl = resData.data.url
-      this.$emit('update:fileId', resData.data.file_id)
+      this.cloud.url = resData.data.url
+      this.$emit('input', resData.data.cloud_id)
     },
     close() {
       this.imagecropperShow = false
@@ -97,16 +104,12 @@ export default {
         width: 100%;
         position: relative;
         @include clearfix;
-        .image-uploader {
-            width: 60%;
-            float: left;
-        }
         .image-preview {
             width: 200px;
             height: 200px;
+            margin-top: 5px;
             position: relative;
             border: 1px dashed #d9d9d9;
-            float: left;
             .image-preview-wrapper {
                 position: relative;
                 width: 100%;
