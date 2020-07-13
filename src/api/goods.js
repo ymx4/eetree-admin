@@ -15,3 +15,21 @@ export function getGoodsTrials(query) {
     params: query
   })
 }
+
+export function passTrial(id, data) {
+  data.status = 9
+  return request({
+    url: '/goods-trials/' + id + '/review',
+    method: 'put',
+    data
+  })
+}
+
+export function refuseTrial(id, data) {
+  data.status = 8
+  return request({
+    url: '/goods-trials/' + id + '/review',
+    method: 'put',
+    data
+  })
+}

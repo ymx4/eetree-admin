@@ -67,7 +67,7 @@ export const constantRoutes = [
   {
     path: '',
     component: Layout,
-    redirect: '/doc/index'
+    redirect: '/doc/list'
   }
 ]
 
@@ -93,7 +93,7 @@ export const mapRoutes = {
   project_review: () => import('@/views/project/review'),
   goods_list: () => import('@/views/project/goods_list'),
   goods_trial_list: () => import('@/views/project/goods_trial_list'),
-  // goods_trial_review: () => import('@/views/goods/trial_review'),
+  goods_trial_review: () => import('@/views/project/goods_trial_review'),
   platform_list: () => import('@/views/platform/list'),
   supplier_list: () => import('@/views/supplier/list'),
   product_list: () => import('@/views/product/list'),
