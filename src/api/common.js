@@ -7,3 +7,12 @@ export function getEnums(key) {
     params: { term: key }
   })
 }
+
+export function getStatus() {
+  return {
+    draft: 0,
+    submit: 1,
+    refuse: 8,
+    pass: 9
+  }
+}

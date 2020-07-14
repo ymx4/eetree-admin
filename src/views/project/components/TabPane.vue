@@ -24,7 +24,7 @@
           <el-button type="success" size="small" @click="handlePass(scope)">
             通过并上线
           </el-button>
-          <el-button v-if="status==='review'" type="danger" size="small" @click="handleRefuse(scope)">
+          <el-button v-if="status==='submit'" type="danger" size="small" @click="handleRefuse(scope)">
             拒绝
           </el-button>
         </template>
@@ -70,8 +70,9 @@
 </template>
 
 <script>
-import { getProjects, pass, refuse, publishPreview } from '@/api/project'
+import { getProjects, reviewProject, publishPreview } from '@/api/project'
 import { getPlatforms } from '@/api/platform'
+import { getStatus } from '@/api/common'
 import Pagination from '@/components/Pagination'
 import { deepClone } from '@/utils'
 
@@ -91,6 +92,7 @@ export default {
       draftVersion: {
         platform_id: []
       },
+      commonStatus: {},
       list: [],
       dialogVisible: false,
       dialogType: 'pass',
@@ -105,6 +107,7 @@ export default {
     }
   },
   created() {
+    this.commonStatus = getStatus()
     this.getProjects()
     this.getPlatforms()
   },
@@ -159,9 +162,9 @@ export default {
     },
     async doReview() {
       if (this.dialogType === 'pass') {
-        await pass(this.draftVersion.project_id, { platform_id: this.draftVersion.platform_id })
+        await reviewProject(this.draftVersion.project_id, { status: this.commonStatus.pass, platform_id: this.draftVersion.platform_id })
       } else {
-        await refuse(this.draftVersion.project_id, { review_remarks: this.draftVersion.review_remarks })
+        await reviewProject(this.draftVersion.project_id, { status: this.commonStatus.refuse, review_remarks: this.draftVersion.review_remarks })
       }
       for (let index = 0; index < this.list.length; index++) {
         if (this.list[index].draftVs.id === this.draftVersion.id) {

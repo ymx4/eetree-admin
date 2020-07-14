@@ -4,7 +4,7 @@
 
       <div class="title-container">
         <h3 class="title">
-          {{ $t('login.title') }}
+          登录
         </h3>
       </div>
 
@@ -15,7 +15,7 @@
         <el-input
           ref="name"
           v-model="loginForm.name"
-          :placeholder="$t('login.username')"
+          placeholder="用户名"
           name="name"
           type="text"
           tabindex="1"
@@ -33,7 +33,7 @@
             ref="password"
             v-model="loginForm.password"
             :type="passwordType"
-            :placeholder="$t('login.password')"
+            placeholder="密码"
             name="password"
             tabindex="2"
             auto-complete="on"
@@ -48,7 +48,7 @@
       </el-tooltip>
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">
-        {{ $t('login.logIn') }}
+        登录
       </el-button>
 
     </el-form>

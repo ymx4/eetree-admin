@@ -19,10 +19,10 @@ export default {
   data() {
     return {
       tabMapOptions: [
-        { label: '待审核', key: 'review' },
+        { label: '待审核', key: 'submit' },
         { label: '已拒绝', key: 'refuse' }
       ],
-      activeName: 'review'
+      activeName: 'submit'
     }
   }
 }

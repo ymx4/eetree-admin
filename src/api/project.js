@@ -38,17 +38,7 @@ export function projectUnTop(id) {
   })
 }
 
-export function pass(id, data) {
-  data.status = 9
-  return request({
-    url: '/projects/' + id + '/review',
-    method: 'put',
-    data
-  })
-}
-
-export function refuse(id, data) {
-  data.status = 8
+export function reviewProject(id, data) {
   return request({
     url: '/projects/' + id + '/review',
     method: 'put',

@@ -31,7 +31,7 @@
           <el-button type="success" size="small" @click="handlePass(scope)">
             通过
           </el-button>
-          <el-button v-if="status==='review'" type="danger" size="small" @click="handleRefuse(scope)">
+          <el-button v-if="status==='submit'" type="danger" size="small" @click="handleRefuse(scope)">
             拒绝
           </el-button>
         </template>
@@ -42,16 +42,6 @@
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='pass'?'发布上线':'拒绝'">
       <el-form ref="reviewForm" :model="goodsTrial" label-width="80px" label-position="left">
-        <el-form-item v-if="dialogType==='pass'" label="平台" prop="platform_id" :rules="[{ required: true, message: '不能为空'},]">
-          <el-select v-model="goodsTrial.platform_id" placeholder="请选择">
-            <el-option
-              v-for="platform in platforms"
-              :key="platform.id"
-              :label="platform.name"
-              :value="platform.id"
-            />
-          </el-select>
-        </el-form-item>
         <el-form-item v-if="dialogType==='refuse'" label="拒绝原因" prop="review_remarks" :rules="[{ required: true, message: '不能为空'},]">
           <el-input
             v-model="goodsTrial.review_remarks"
@@ -77,7 +67,8 @@
 </template>
 
 <script>
-import { getGoodsTrials, passTrial, refuseTrial } from '@/api/goods'
+import { getGoodsTrials, reviewTrial } from '@/api/goods'
+import { getStatus } from '@/api/common'
 import Pagination from '@/components/Pagination'
 import { deepClone } from '@/utils'
 
@@ -87,15 +78,15 @@ export default {
   props: {
     status: {
       type: String,
-      default: 'review'
+      default: 'submit'
     }
   },
   data() {
     return {
       listLoading: true,
       platforms: [],
-      goodsTrial: {
-      },
+      goodsTrial: {},
+      commonStatus: {},
       list: [],
       dialogVisible: false,
       dialogType: 'pass',
@@ -110,12 +101,13 @@ export default {
     }
   },
   created() {
+    this.commonStatus = getStatus()
     this.getGoodsTrials()
   },
   methods: {
     async getGoodsTrials() {
       this.listLoading = true
-      const res = await getGoodsTrials({ draft: true, page: this.listQuery.page })
+      const res = await getGoodsTrials({ draft: true, status: this.commonStatus[this.status], page: this.listQuery.page })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
@@ -150,9 +142,9 @@ export default {
     },
     async doReview() {
       if (this.dialogType === 'pass') {
-        await passTrial(this.goodsTrial.project_id, { })
+        await reviewTrial(this.goodsTrial.id, { status: this.commonStatus.pass })
       } else {
-        await refuseTrial(this.goodsTrial.project_id, { review_remarks: this.goodsTrial.review_remarks })
+        await reviewTrial(this.goodsTrial.id, { status: this.commonStatus.refuse, review_remarks: this.goodsTrial.review_remarks })
       }
       for (let index = 0; index < this.list.length; index++) {
         if (this.list[index].id === this.goodsTrial.id) {

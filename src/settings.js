@@ -1,5 +1,5 @@
 module.exports = {
-  title: '电子森林',
+  title: '测试',
 
   /**
    * @type {boolean} true | false

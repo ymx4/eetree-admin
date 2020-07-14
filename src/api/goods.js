@@ -10,25 +10,23 @@ export function getGoods(query) {
 
 export function getGoodsTrials(query) {
   return request({
-    url: '/goods-trials',
+    url: '/goodsTrials',
     method: 'get',
     params: query
   })
 }
 
-export function passTrial(id, data) {
-  data.status = 9
+export function updateGoodsTrial(id, data) {
   return request({
-    url: '/goods-trials/' + id + '/review',
+    url: '/goodsTrials/' + id,
     method: 'put',
     data
   })
 }
 
-export function refuseTrial(id, data) {
-  data.status = 8
+export function reviewTrial(id, data) {
   return request({
-    url: '/goods-trials/' + id + '/review',
+    url: '/goodsTrials/' + id + '/review',
     method: 'put',
     data
   })
