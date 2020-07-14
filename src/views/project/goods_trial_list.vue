@@ -33,6 +33,16 @@
           {{ scope.row.created_at }}
         </template>
       </el-table-column>
+      <el-table-column align="center" label="操作">
+        <template slot-scope="scope">
+          <el-button v-if="scope.row.published === 0" type="primary" size="small" @click="handlePublish(scope, 1)">
+            上线
+          </el-button>
+          <el-button v-if="scope.row.published === 1" type="warning" size="small" @click="handlePublish(scope, 0)">
+            下线
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getGoodsTrials" />
@@ -41,7 +51,7 @@
 </template>
 
 <script>
-import { getGoodsTrials } from '@/api/goods'
+import { getGoodsTrials, updateGoodsTrial } from '@/api/goods'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -80,6 +90,19 @@ export default {
       this.listQuery.limit = res.meta.per_page
       this.total = res.meta.total
       this.listLoading = false
+    },
+    async handlePublish(scope, publish) {
+      await updateGoodsTrial(scope.row.id, { publish })
+      for (let index = 0; index < this.list.length; index++) {
+        if (this.list[index].id === scope.row.id) {
+          this.list[index].published = publish
+          break
+        }
+      }
+      this.$message({
+        type: 'success',
+        message: '操作成功!'
+      })
     }
   }
 }
