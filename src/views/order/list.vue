@@ -15,7 +15,7 @@
       </el-table-column>
       <el-table-column align="center" label="商品名">
         <template slot-scope="scope">
-          {{ scope.row.order_items[0].goods.name }}
+          {{ scope.row.orderItems[0].project_goods.name }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="总金额">
@@ -25,7 +25,7 @@
       </el-table-column>
       <el-table-column align="center" label="数量">
         <template slot-scope="scope">
-          {{ scope.row.order_items[0].quantity }}
+          {{ scope.row.orderItems[0].quantity }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="状态">
