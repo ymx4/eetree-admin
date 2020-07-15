@@ -1,8 +1,14 @@
 <template>
   <div class="app-container">
-    <el-button type="primary" @click="handleAddTag">
-      添加标签
-    </el-button>
+    <div class="filter-container">
+      <el-input v-model="listQuery.title" placeholder="名称" style="width: 200px;" class="filter-item" />
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        搜索
+      </el-button>
+      <el-button class="filter-item" type="primary" @click="handleAddTag">
+        添加
+      </el-button>
+    </div>
 
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
       <el-table-column align="center" label="名称">
@@ -37,12 +43,16 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getTags" />
+
   </div>
 </template>
 
 <script>
 import { deepClone } from '@/utils'
 import { getTags, addTag, deleteTag, updateTag } from '@/api/tag'
+import Pagination from '@/components/Pagination'
 
 const defaultTag = {
   name: ''
@@ -50,27 +60,44 @@ const defaultTag = {
 
 export default {
   name: 'TagList',
+  components: { Pagination },
   data() {
     return {
       listLoading: true,
       tag: Object.assign({}, defaultTag),
       list: [],
       dialogVisible: false,
-      dialogType: 'new'
+      dialogType: 'new',
+      total: 0,
+      listQuery: {
+        page: 1,
+        limit: 10,
+        title: ''
+      }
     }
   },
   created() {
     this.getTags()
   },
   methods: {
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getTags()
+    },
     async getTags() {
       this.listLoading = true
-      const res = await getTags()
+      const res = await getTags({
+        page: this.listQuery.page,
+        title: this.listQuery.title
+      })
       this.list = res.data
+      this.listQuery.page = res.meta.current_page
+      this.listQuery.limit = res.meta.per_page
+      this.total = res.meta.total
       this.listLoading = false
     },
     handleAddTag() {
-      this.tag = Object.assign({}, defaultTag)
+      this.tag = deepClone(defaultTag)
       this.dialogType = 'new'
       this.dialogVisible = true
     },

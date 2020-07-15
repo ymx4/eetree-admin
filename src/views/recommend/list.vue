@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.area_id" style="width: 140px" class="filter-item">
+      <el-select v-model="listQuery.area_id" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option label="所有分组" value="-1" />
         <el-option
           v-for="area in areas"

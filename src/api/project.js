@@ -8,6 +8,14 @@ export function getProjects(query) {
   })
 }
 
+export function getDrafts(query) {
+  return request({
+    url: '/project-drafts',
+    method: 'get',
+    params: query
+  })
+}
+
 export function updateProject(id, data) {
   return request({
     url: '/projects/' + id,
@@ -40,7 +48,7 @@ export function projectUnTop(id) {
 
 export function reviewProject(id, data) {
   return request({
-    url: '/projects/' + id + '/review',
+    url: '/project-drafts/' + id + '/review',
     method: 'put',
     data
   })

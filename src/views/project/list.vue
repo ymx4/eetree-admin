@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.searchType" style="width: 140px" class="filter-item">
+      <el-select v-model="listQuery.searchType" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option label="所有" value="all" />
         <el-option label="置顶项目" value="top" />
       </el-select>
@@ -18,7 +18,7 @@
       </el-table-column>
       <el-table-column align="center" label="标题">
         <template slot-scope="scope">
-          {{ scope.row.publishVs.title }}
+          {{ scope.row.title }}
         </template>
       </el-table-column>
       <el-table-column v-if="listQuery.searchType === 'top'" align="center" label="置顶已展示">
@@ -46,9 +46,6 @@
           <el-button v-if="scope.row.published === 0" type="primary" size="small" @click="handlePreview(scope)">
             预览
           </el-button>
-          <!-- <el-button type="primary" size="small" @click="handleEdit(scope)">
-            编辑
-          </el-button> -->
           <el-button v-if="scope.row.projectTop && scope.row.projectTop.is_top === 1" type="warning" size="small" @click="handleTop(scope)">
             取消置顶
           </el-button>
@@ -106,11 +103,6 @@ import { deepClone, frontBaseUrl } from '@/utils'
 import { getProjects, updateProject, projectPreview, projectTop, projectUnTop } from '@/api/project'
 import Pagination from '@/components/Pagination'
 
-const defaultProject = {
-  name: '',
-  password: ''
-}
-
 const defaultTop = {
   date: '',
   threshold: 0,
@@ -125,10 +117,7 @@ export default {
     return {
       frontBaseUrl: frontBaseUrl(),
       listLoading: true,
-      project: Object.assign({}, defaultProject),
       list: [],
-      dialogVisible: false,
-      dialogType: 'new',
       total: 0,
       listQuery: {
         page: 1,
@@ -157,19 +146,13 @@ export default {
       const res = await getProjects({
         page: this.listQuery.page,
         title: this.listQuery.title,
-        sType: this.listQuery.searchType,
-        status: 'publish'
+        sType: this.listQuery.searchType
       })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
       this.total = res.meta.total
       this.listLoading = false
-    },
-    handleEdit(scope) {
-      this.dialogType = 'edit'
-      this.dialogVisible = true
-      this.project = deepClone(scope.row)
     },
     handlePreview(scope) {
       projectPreview(scope.row.id).then(res => {

@@ -8,12 +8,12 @@
       </el-table-column>
       <el-table-column align="center" label="标题">
         <template slot-scope="scope">
-          {{ scope.row.draftVs.title }}
+          {{ scope.row.title }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="提交时间">
         <template slot-scope="scope">
-          {{ scope.row.draftVs.submit_at }}
+          {{ scope.row.submit_at }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作">
@@ -31,12 +31,12 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getProjects" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getDrafts" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='pass'?'发布上线':'拒绝'">
-      <el-form ref="reviewForm" :model="draftVersion" label-width="80px" label-position="left">
+      <el-form ref="reviewForm" :model="projectDraft" label-width="80px" label-position="left">
         <el-form-item v-if="dialogType==='pass'" label="平台" prop="platform_id" :rules="[{ required: true, message: '不能为空'},]">
-          <el-select v-model="draftVersion.platform_id" placeholder="请选择">
+          <el-select v-model="projectDraft.platform_id" placeholder="请选择">
             <el-option
               v-for="platform in platforms"
               :key="platform.id"
@@ -47,7 +47,7 @@
         </el-form-item>
         <el-form-item v-if="dialogType==='refuse'" label="拒绝原因" prop="review_remarks" :rules="[{ required: true, message: '不能为空'},]">
           <el-input
-            v-model="draftVersion.review_remarks"
+            v-model="projectDraft.review_remarks"
             type="textarea"
             :rows="2"
             placeholder="请输入拒绝的原因"
@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import { getProjects, reviewProject, publishPreview } from '@/api/project'
+import { getDrafts, reviewProject, publishPreview } from '@/api/project'
 import { getPlatforms } from '@/api/platform'
 import { getStatus } from '@/api/common'
 import Pagination from '@/components/Pagination'
@@ -89,7 +89,7 @@ export default {
     return {
       listLoading: true,
       platforms: [],
-      draftVersion: {
+      projectDraft: {
         platform_id: []
       },
       commonStatus: {},
@@ -108,13 +108,13 @@ export default {
   },
   created() {
     this.commonStatus = getStatus()
-    this.getProjects()
+    this.getDrafts()
     this.getPlatforms()
   },
   methods: {
-    async getProjects() {
+    async getDrafts() {
       this.listLoading = true
-      const res = await getProjects({ status: this.status, page: this.listQuery.page })
+      const res = await getDrafts({ status: this.commonStatus[this.status], page: this.listQuery.page })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
@@ -134,8 +134,7 @@ export default {
     },
     async handlePass(scope) {
       this.dialogType = 'pass'
-      this.draftVersion = deepClone(scope.row.draftVs)
-      this.$set(this.draftVersion, 'project_id', scope.row.id)
+      this.projectDraft = deepClone(scope.row)
       this.dialogVisible = true
       this.$nextTick(function() {
         this.$refs.reviewForm.clearValidate()
@@ -144,9 +143,8 @@ export default {
     handleRefuse(scope) {
       this.dialogVisible = true
       this.dialogType = 'refuse'
-      this.draftVersion = deepClone(scope.row.draftVs)
-      this.$set(this.draftVersion, 'project_id', scope.row.id)
-      this.$set(this.draftVersion, 'review_remarks', '')
+      this.projectDraft = deepClone(scope.row)
+      this.$set(this.projectDraft, 'review_remarks', '')
       this.$nextTick(function() {
         this.$refs.reviewForm.clearValidate()
       })
@@ -162,12 +160,12 @@ export default {
     },
     async doReview() {
       if (this.dialogType === 'pass') {
-        await reviewProject(this.draftVersion.project_id, { status: this.commonStatus.pass, platform_id: this.draftVersion.platform_id })
+        await reviewProject(this.projectDraft.id, { status: this.commonStatus.pass, platform_id: this.projectDraft.platform_id })
       } else {
-        await reviewProject(this.draftVersion.project_id, { status: this.commonStatus.refuse, review_remarks: this.draftVersion.review_remarks })
+        await reviewProject(this.projectDraft.id, { status: this.commonStatus.refuse, review_remarks: this.projectDraft.review_remarks })
       }
       for (let index = 0; index < this.list.length; index++) {
-        if (this.list[index].draftVs.id === this.draftVersion.id) {
+        if (this.list[index].id === this.projectDraft.id) {
           this.list.splice(index, 1)
           break
         }

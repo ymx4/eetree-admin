@@ -1,9 +1,10 @@
 import request from '@/utils/request'
 
-export function getTags() {
+export function getTags(query) {
   return request({
     url: '/tags',
-    method: 'get'
+    method: 'get',
+    params: query
   })
 }
 

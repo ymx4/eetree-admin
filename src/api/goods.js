@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getGoods(query) {
   return request({
-    url: '/goods',
+    url: '/project-goods',
     method: 'get',
     params: query
   })
@@ -10,7 +10,7 @@ export function getGoods(query) {
 
 export function getGoodsTrials(query) {
   return request({
-    url: '/goodsTrials',
+    url: '/goods-trials',
     method: 'get',
     params: query
   })
@@ -18,7 +18,7 @@ export function getGoodsTrials(query) {
 
 export function updateGoodsTrial(id, data) {
   return request({
-    url: '/goodsTrials/' + id,
+    url: '/goods-trials/' + id,
     method: 'put',
     data
   })
@@ -26,7 +26,7 @@ export function updateGoodsTrial(id, data) {
 
 export function reviewTrial(id, data) {
   return request({
-    url: '/goodsTrials/' + id + '/review',
+    url: '/goods-trials/' + id + '/review',
     method: 'put',
     data
   })

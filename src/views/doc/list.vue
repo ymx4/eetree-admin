@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.searchType" style="width: 140px" class="filter-item">
+      <el-select v-model="listQuery.searchType" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option label="所有" value="all" />
         <el-option label="置顶文档" value="top" />
       </el-select>
