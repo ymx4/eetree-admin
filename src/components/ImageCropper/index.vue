@@ -223,6 +223,10 @@ export default {
     withCredentials: {
       type: Boolean,
       default: false
+    },
+    storage: {
+      type: String,
+      default: ''
     }
   },
   data() {
