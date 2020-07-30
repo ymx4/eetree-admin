@@ -57,8 +57,7 @@
 
 <script>
 import { arrPluck, deepClone } from '@/utils'
-import { getRoles, addRole, deleteRole, updateRole } from '@/api/role'
-import { getPermissions } from '@/api/permission'
+import { getRoles, addRole, deleteRole, updateRole, getPermissions } from '@/api/admin'
 import { getMenus } from '@/api/menu'
 import Pagination from '@/components/Pagination'
 
@@ -69,7 +68,7 @@ const defaultRole = {
 }
 
 export default {
-  name: 'RoleList',
+  name: 'AdminRole',
   components: { Pagination },
   data() {
     return {

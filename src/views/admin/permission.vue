@@ -72,7 +72,7 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { getPermissions, addPermission, deletePermission, updatePermission } from '@/api/permission'
+import { getPermissions, addPermission, deletePermission, updatePermission } from '@/api/admin'
 import Pagination from '@/components/Pagination'
 
 const defaultPermission = {
@@ -82,7 +82,7 @@ const defaultPermission = {
 }
 
 export default {
-  name: 'PermissionList',
+  name: 'AdminPermission',
   components: { Pagination },
   data() {
     return {

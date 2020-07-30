@@ -44,6 +44,11 @@ export const constantRoutes = [
       }
     ]
   },
+  // {
+  //   path: '',
+  //   component: Layout,
+  //   redirect: '/doc/list'
+  // },
   {
     path: '/login',
     component: () => import('@/views/login/index'),
@@ -63,11 +68,6 @@ export const constantRoutes = [
     path: '/401',
     component: () => import('@/views/error-page/401'),
     hidden: true
-  },
-  {
-    path: '',
-    component: Layout,
-    redirect: '/doc/list'
   }
 ]
 
@@ -81,9 +81,9 @@ export const asyncRoutes = [
 
 export const mapRoutes = {
   Layout: Layout,
-  adminuser_list: () => import('@/views/adminuser/list'),
-  role_list: () => import('@/views/role/list'),
-  permission_list: () => import('@/views/permission/list'),
+  admin_user: () => import('@/views/admin/user'),
+  admin_role: () => import('@/views/admin/role'),
+  admin_permission: () => import('@/views/admin/permission'),
   category_list: () => import('@/views/category/list'),
   tag_list: () => import('@/views/tag/list'),
   doc_list: () => import('@/views/doc/list'),

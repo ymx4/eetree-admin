@@ -63,8 +63,7 @@
 
 <script>
 import { arrPluck, deepClone } from '@/utils'
-import { getUsers, addUser, deleteUser, updateUser } from '@/api/adminuser'
-import { getRoles } from '@/api/role'
+import { getUsers, addUser, deleteUser, updateUser, getRoles } from '@/api/admin'
 import Pagination from '@/components/Pagination'
 
 const defaultUser = {
@@ -74,7 +73,7 @@ const defaultUser = {
 }
 
 export default {
-  name: 'AdminuserList',
+  name: 'AdminUser',
   components: { Pagination },
   data() {
     return {
