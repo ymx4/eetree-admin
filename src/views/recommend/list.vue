@@ -49,6 +49,9 @@
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'添加'">
       <el-form :model="recommend" label-width="160px" label-position="left">
+        <el-form-item label="获取">
+          <get-item v-if="dialogVisible" v-model="recommendItem" @fetchItem="fetchItem" />
+        </el-form-item>
         <el-form-item label="标题">
           <el-input v-model="recommend.title" placeholder="标题" />
         </el-form-item>
@@ -98,6 +101,7 @@ import { getRecommends, addRecommend, deleteRecommend, updateRecommend } from '@
 import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
 import Upload from '@/components/Upload/SingleImage'
+import GetItem from './components/GetItem'
 
 const defaultRecommend = {
   title: '',
@@ -112,7 +116,7 @@ const defaultRecommend = {
 
 export default {
   name: 'RecommendList',
-  components: { Pagination, Upload },
+  components: { Pagination, Upload, GetItem },
   data() {
     return {
       listLoading: true,
@@ -121,6 +125,7 @@ export default {
       dialogVisible: false,
       dialogType: 'new',
       total: 0,
+      recommendItem: Object.assign({}, defaultRecommend),
       listQuery: {
         page: 1,
         limit: 10,
@@ -158,6 +163,7 @@ export default {
     },
     handleAddRecommend() {
       this.recommend = deepClone(defaultRecommend)
+      this.recommendItem = deepClone(defaultRecommend)
       this.dialogType = 'new'
       this.dialogVisible = true
     },
@@ -165,6 +171,10 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.recommend = deepClone(scope.row)
+      this.recommendItem = deepClone(defaultRecommend)
+    },
+    fetchItem() {
+      this.recommend = deepClone(this.recommendItem)
     },
     handleDelete({ $index, row }) {
       this.$confirm('确定要删除吗', '警告', {
