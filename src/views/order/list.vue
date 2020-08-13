@@ -13,7 +13,14 @@
           {{ scope.row.order_no }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="商品名">
+      <el-table-column align="center" label="项目">
+        <template slot-scope="scope">
+          <el-link type="primary" :href="scope.row.orderItems[0].project_goods.project.url" target="_blank">
+            {{ scope.row.orderItems[0].project_goods.project.title }}
+          </el-link>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="商品">
         <template slot-scope="scope">
           {{ scope.row.orderItems[0].project_goods.name }}
         </template>
