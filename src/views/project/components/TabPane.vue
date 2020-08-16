@@ -72,7 +72,7 @@
 <script>
 import { getDrafts, reviewProject, publishPreview } from '@/api/project'
 import { getPlatforms } from '@/api/platform'
-import { getStatus } from '@/api/common'
+import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
 import { deepClone } from '@/utils'
 
@@ -82,7 +82,7 @@ export default {
   props: {
     status: {
       type: String,
-      default: 'review'
+      default: 'submit'
     }
   },
   data() {
@@ -107,14 +107,24 @@ export default {
     }
   },
   created() {
-    this.commonStatus = getStatus()
-    this.getDrafts()
-    this.getPlatforms()
+    this.getStatus().then(ret => {
+      this.getDrafts()
+      this.getPlatforms()
+    })
   },
   methods: {
+    async getStatus() {
+      const res = await getEnums('status', 'all')
+      this.commonStatus = res.data
+    },
     async getDrafts() {
       this.listLoading = true
-      const res = await getDrafts({ status: this.commonStatus[this.status], page: this.listQuery.page })
+      let res
+      if (this.status === 'submit') {
+        res = await getDrafts({ status: this.commonStatus.SUBMIT.k, page: this.listQuery.page })
+      } else {
+        res = await getDrafts({ status: this.commonStatus.REFUSE.k, page: this.listQuery.page })
+      }
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
@@ -160,9 +170,9 @@ export default {
     },
     async doReview() {
       if (this.dialogType === 'pass') {
-        await reviewProject(this.projectDraft.id, { status: this.commonStatus.pass, platform_id: this.projectDraft.platform_id })
+        await reviewProject(this.projectDraft.id, { status: this.commonStatus.PASS.k, platform_id: this.projectDraft.platform_id })
       } else {
-        await reviewProject(this.projectDraft.id, { status: this.commonStatus.refuse, review_remarks: this.projectDraft.review_remarks })
+        await reviewProject(this.projectDraft.id, { status: this.commonStatus.REFUSE.k, review_remarks: this.projectDraft.review_remarks })
       }
       for (let index = 0; index < this.list.length; index++) {
         if (this.list[index].id === this.projectDraft.id) {

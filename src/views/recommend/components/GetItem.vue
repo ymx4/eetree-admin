@@ -110,7 +110,7 @@ export default {
     async remoteMethod(query) {
       this.list = []
       if (query !== '') {
-        if (this.typeId === this.types.doc.k) {
+        if (this.typeId === this.types.DOC.k) {
           this.loading = true
           const res = await getDocs({
             title: query
@@ -120,7 +120,7 @@ export default {
             this.list.push(this.formatDoc(row))
           })
           this.loading = false
-        } else if (this.typeId === this.types.project.k) {
+        } else if (this.typeId === this.types.PROJECT.k) {
           this.loading = true
           const res = await getProjects({
             title: query

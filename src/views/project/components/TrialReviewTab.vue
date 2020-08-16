@@ -68,7 +68,7 @@
 
 <script>
 import { getGoodsTrials, reviewTrial } from '@/api/goods'
-import { getStatus } from '@/api/common'
+import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
 import { deepClone } from '@/utils'
 
@@ -101,13 +101,23 @@ export default {
     }
   },
   created() {
-    this.commonStatus = getStatus()
-    this.getGoodsTrials()
+    this.getStatus().then(ret => {
+      this.getGoodsTrials()
+    })
   },
   methods: {
+    async getStatus() {
+      const res = await getEnums('status', 'all')
+      this.commonStatus = res.data
+    },
     async getGoodsTrials() {
       this.listLoading = true
-      const res = await getGoodsTrials({ draft: true, status: this.commonStatus[this.status], page: this.listQuery.page })
+      let res
+      if (this.status === 'submit') {
+        res = await getGoodsTrials({ draft: true, status: this.commonStatus.SUBMIT.k, page: this.listQuery.page })
+      } else {
+        res = await getGoodsTrials({ draft: true, status: this.commonStatus.REFUSE.k, page: this.listQuery.page })
+      }
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
@@ -142,9 +152,9 @@ export default {
     },
     async doReview() {
       if (this.dialogType === 'pass') {
-        await reviewTrial(this.goodsTrial.id, { status: this.commonStatus.pass })
+        await reviewTrial(this.goodsTrial.id, { status: this.commonStatus.PASS.k })
       } else {
-        await reviewTrial(this.goodsTrial.id, { status: this.commonStatus.refuse, review_remarks: this.goodsTrial.review_remarks })
+        await reviewTrial(this.goodsTrial.id, { status: this.commonStatus.REFUSE.k, review_remarks: this.goodsTrial.review_remarks })
       }
       for (let index = 0; index < this.list.length; index++) {
         if (this.list[index].id === this.goodsTrial.id) {
