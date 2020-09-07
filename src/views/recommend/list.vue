@@ -49,7 +49,7 @@
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'添加'">
       <el-form :model="recommend" label-width="160px" label-position="left">
-        <el-form-item label="获取">
+        <el-form-item label="内容类型">
           <get-item v-if="dialogVisible" v-model="recommendItem" @fetchItem="fetchItem" />
         </el-form-item>
         <el-form-item label="标题">
@@ -104,6 +104,8 @@ import Upload from '@/components/Upload/SingleImage'
 import GetItem from './components/GetItem'
 
 const defaultRecommend = {
+  obj_type: -1,
+  obj_id: 0,
   title: '',
   area_id: 0,
   description: '',
@@ -171,7 +173,7 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.recommend = deepClone(scope.row)
-      this.recommendItem = deepClone(defaultRecommend)
+      this.recommendItem = deepClone(scope.row)
     },
     fetchItem() {
       this.recommend = deepClone(this.recommendItem)
@@ -194,6 +196,8 @@ export default {
     },
     fields(recommend) {
       return {
+        obj_type: recommend.obj_type,
+        obj_id: recommend.obj_id,
         title: recommend.title,
         area_id: recommend.area_id,
         description: recommend.description,

@@ -1,6 +1,7 @@
 <template>
   <div>
     <el-select v-model="typeId" @change="typeChange">
+      <el-option label="请选择" :value="-1" />
       <el-option
         v-for="type in types"
         :key="type.k"
@@ -19,9 +20,9 @@
     >
       <el-option
         v-for="item in list"
-        :key="item.query_id"
+        :key="item.obj_id"
         :label="item.title"
-        :value="item.query_id"
+        :value="item.obj_id"
       />
     </el-select>
     <el-button class="filter-item" type="primary" @click="handleFetch">
@@ -53,7 +54,9 @@ export default {
     }
   },
   created() {
-    this.getTypes()
+    this.getTypes().then(ret => {
+      this.typeId = this.value.obj_type
+    })
   },
   methods: {
     async getTypes() {
@@ -69,11 +72,9 @@ export default {
         return
       }
       for (let index = 0; index < this.list.length; index++) {
-        if (this.list[index].query_id === this.recId) {
+        if (this.list[index].obj_id === this.recId) {
           for (const iKey in this.list[index]) {
-            if (iKey !== 'query_id') {
-              this.value[iKey] = this.list[index][iKey]
-            }
+            this.value[iKey] = this.list[index][iKey]
           }
           break
         }
@@ -82,7 +83,8 @@ export default {
     },
     formatProject(project) {
       return {
-        query_id: project.id,
+        obj_type: this.types.PROJECT.k,
+        obj_id: project.id,
         title: project.title,
         area_id: 0,
         description: project.description,
@@ -93,7 +95,8 @@ export default {
     },
     formatDoc(doc) {
       return {
-        query_id: doc.id,
+        obj_type: this.types.DOC.k,
+        obj_id: doc.id,
         title: doc.title,
         area_id: 0,
         description: doc.description,
@@ -106,6 +109,10 @@ export default {
     },
     typeChange() {
       this.list = []
+      if (this.typeId === -1) {
+        this.value.obj_type = -1
+        this.value.obj_id = 0
+      }
     },
     async remoteMethod(query) {
       this.list = []
