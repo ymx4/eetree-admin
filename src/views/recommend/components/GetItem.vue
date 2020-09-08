@@ -120,7 +120,8 @@ export default {
         if (this.typeId === this.types.DOC.k) {
           this.loading = true
           const res = await getDocs({
-            title: query
+            title: query,
+            publish: 1
           })
           const queryList = res.data
           queryList.forEach(row => {
@@ -130,7 +131,8 @@ export default {
         } else if (this.typeId === this.types.PROJECT.k) {
           this.loading = true
           const res = await getProjects({
-            title: query
+            title: query,
+            publish: 1
           })
           const queryList = res.data
           queryList.forEach(row => {
