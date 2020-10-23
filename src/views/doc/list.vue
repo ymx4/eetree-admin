@@ -43,9 +43,6 @@
               查看
             </a>
           </el-button>
-          <el-button v-if="scope.row.published === 0" type="primary" size="small" @click="handlePreview(scope)">
-            预览
-          </el-button>
           <!-- <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
           </el-button> -->
@@ -64,9 +61,6 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-dialog :visible.sync="previewVisable" title="预览" :fullscreen="true">
-      <iframe :src="previewUrl" style="width: 100%; border: 0;" :height="previewHeight" />
-    </el-dialog>
     <el-dialog :visible.sync="topVisible" title="置顶">
       <el-form :model="docTop" label-width="160px" label-position="left">
         <el-form-item label="置顶时间段">
@@ -109,7 +103,7 @@
 
 <script>
 import { deepClone, frontBaseUrl } from '@/utils'
-import { getDocs, updateDoc, docPreview, docTop, docUnTop } from '@/api/doc'
+import { getDocs, updateDoc, docTop, docUnTop } from '@/api/doc'
 import Pagination from '@/components/Pagination'
 
 const defaultDoc = {
@@ -144,9 +138,6 @@ export default {
         title: '',
         searchType: 'all'
       },
-      previewVisable: false,
-      previewUrl: '',
-      previewHeight: 0,
       topVisible: false,
       topId: 0,
       docTop: Object.assign({}, defaultTop)
@@ -177,13 +168,6 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.doc = deepClone(scope.row)
-    },
-    handlePreview(scope) {
-      docPreview(scope.row.id).then(res => {
-        this.previewHeight = document.documentElement.clientHeight
-        this.previewVisable = true
-        this.previewUrl = res.data.url
-      })
     },
     async handlePublish(scope, publish) {
       await updateDoc(scope.row.id, { publish })

@@ -53,3 +53,10 @@ export function reviewProject(id, data) {
     data
   })
 }
+
+export function publishPreview(id) {
+  return request({
+    url: '/project-drafts/' + id + '/previewKey',
+    method: 'get'
+  })
+}

@@ -420,3 +420,7 @@ export function selectOptions(tree, labelKey, valueKey, depth = 0) {
 export function frontBaseUrl() {
   return 'https://www.eetree.cn/'
 }
+
+export function stripTags(html) {
+  return html.replace(/<[^>]+>/g, '')
+}

@@ -35,6 +35,7 @@
 import { getEnums } from '@/api/common'
 import { getProjects } from '@/api/project'
 import { getDocs } from '@/api/doc'
+import { stripTags } from '@/utils'
 
 export default {
   name: 'RecommendGetItem',
@@ -74,7 +75,11 @@ export default {
       for (let index = 0; index < this.list.length; index++) {
         if (this.list[index].obj_id === this.recId) {
           for (const iKey in this.list[index]) {
-            this.value[iKey] = this.list[index][iKey]
+            if (iKey === 'description') {
+              this.value[iKey] = stripTags(this.list[index][iKey])
+            } else {
+              this.value[iKey] = this.list[index][iKey]
+            }
           }
           break
         }
@@ -120,7 +125,8 @@ export default {
         if (this.typeId === this.types.DOC.k) {
           this.loading = true
           const res = await getDocs({
-            title: query
+            title: query,
+            publish: 1
           })
           const queryList = res.data
           queryList.forEach(row => {
@@ -130,7 +136,8 @@ export default {
         } else if (this.typeId === this.types.PROJECT.k) {
           this.loading = true
           const res = await getProjects({
-            title: query
+            title: query,
+            publish: 1
           })
           const queryList = res.data
           queryList.forEach(row => {

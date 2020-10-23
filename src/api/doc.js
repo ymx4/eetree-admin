@@ -31,13 +31,6 @@ export function deleteDoc(id) {
   })
 }
 
-export function docPreview(id) {
-  return request({
-    url: '/docs/' + id + '/previewKey',
-    method: 'get'
-  })
-}
-
 export function docTop(id, data) {
   return request({
     url: '/docs/' + id + '/top',

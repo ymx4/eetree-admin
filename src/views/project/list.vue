@@ -43,9 +43,6 @@
               查看
             </a>
           </el-button>
-          <el-button v-if="scope.row.published === 0" type="primary" size="small" @click="handlePreview(scope)">
-            预览
-          </el-button>
           <el-button v-if="scope.row.projectTop && scope.row.projectTop.is_top === 1" type="warning" size="small" @click="handleTop(scope)">
             取消置顶
           </el-button>
@@ -61,9 +58,6 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-dialog :visible.sync="previewVisable" title="预览" :fullscreen="true">
-      <iframe :src="previewUrl" style="width: 100%; border: 0;" :height="previewHeight" />
-    </el-dialog>
     <el-dialog :visible.sync="topVisible" title="置顶">
       <el-form :model="projectTop" label-width="160px" label-position="left">
         <el-form-item label="置顶时间段">
@@ -100,7 +94,7 @@
 
 <script>
 import { deepClone, frontBaseUrl } from '@/utils'
-import { getProjects, updateProject, projectPreview, projectTop, projectUnTop } from '@/api/project'
+import { getProjects, updateProject, projectTop, projectUnTop } from '@/api/project'
 import Pagination from '@/components/Pagination'
 
 const defaultTop = {
@@ -125,9 +119,6 @@ export default {
         title: '',
         searchType: 'all'
       },
-      previewVisable: false,
-      previewUrl: '',
-      previewHeight: 0,
       topVisible: false,
       topId: 0,
       projectTop: Object.assign({}, defaultTop)
@@ -153,13 +144,6 @@ export default {
       this.listQuery.limit = res.meta.per_page
       this.total = res.meta.total
       this.listLoading = false
-    },
-    handlePreview(scope) {
-      projectPreview(scope.row.id).then(res => {
-        this.previewHeight = document.documentElement.clientHeight
-        this.previewVisable = true
-        this.previewUrl = res.data.url
-      })
     },
     async handlePublish(scope, publish) {
       await updateProject(scope.row.id, { publish })
