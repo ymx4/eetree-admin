@@ -16,6 +16,11 @@
           {{ scope.row.name }}
         </template>
       </el-table-column>
+      <el-table-column align="center" label="LOGO">
+        <template slot-scope="scope">
+          <img style="max-width:100px;" :src="scope.row.cloud.url">
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="链接">
         <template slot-scope="scope">
           {{ scope.row.link }}
@@ -38,7 +43,7 @@
         <el-form-item label="名称">
           <el-input v-model="supplier.name" placeholder="名称" />
         </el-form-item>
-        <el-form-item label="图片">
+        <el-form-item label="LOGO">
           <Upload v-model="supplier.cloud_id" :cloud="supplier.cloud" :crop-opt="cropOpt" />
         </el-form-item>
         <el-form-item label="链接">

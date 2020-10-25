@@ -2,6 +2,15 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.title" placeholder="名称" style="width: 200px;" class="filter-item" />
+      <el-select v-model="listQuery.searchType" style="width: 140px" class="filter-item" @change="handleFilter">
+        <el-option label="所有类型" value="all" />
+        <el-option
+          v-for="productType in productTypes"
+          :key="productType.k"
+          :label="productType.l"
+          :value="productType.k"
+        />
+      </el-select>
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
@@ -125,7 +134,8 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
-        title: ''
+        title: '',
+        searchType: 'all'
       },
       cropOpt: {
         width: 300,
@@ -147,7 +157,8 @@ export default {
       this.listLoading = true
       const res = await getProducts({
         page: this.listQuery.page,
-        title: this.listQuery.title
+        title: this.listQuery.title,
+        sType: this.listQuery.searchType
       })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
