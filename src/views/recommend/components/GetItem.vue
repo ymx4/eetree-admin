@@ -92,7 +92,7 @@ export default {
         obj_id: project.id,
         title: project.title,
         area_id: 0,
-        description: project.description,
+        description: project.summary !== '' ? project.summary : project.description,
         link: project.url,
         cloud_id: project.cloud_id,
         cloud: project.cloud

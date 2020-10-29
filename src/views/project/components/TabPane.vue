@@ -37,6 +37,7 @@
       <el-form ref="reviewForm" :model="projectDraft" label-width="80px" label-position="left">
         <el-form-item v-if="dialogType==='pass'" label="平台" prop="platform_id" :rules="[{ required: true, message: '不能为空'},]">
           <el-select v-model="projectDraft.platform_id" placeholder="请选择">
+            <el-option label="请选择" :value="0" />
             <el-option
               v-for="platform in platforms"
               :key="platform.id"
