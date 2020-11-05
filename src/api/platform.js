@@ -29,3 +29,12 @@ export function deletePlatform(id) {
     method: 'delete'
   })
 }
+
+export function changeOrder(id, moveId) {
+  const data = { move_id: moveId }
+  return request({
+    url: '/platforms/' + id,
+    method: 'put',
+    data
+  })
+}

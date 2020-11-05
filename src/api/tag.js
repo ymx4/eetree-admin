@@ -30,3 +30,11 @@ export function deleteTag(id) {
     method: 'delete'
   })
 }
+
+export function mergeTag(id, data) {
+  return request({
+    url: '/tags/' + id,
+    method: 'put',
+    data
+  })
+}

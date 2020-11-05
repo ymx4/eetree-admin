@@ -16,10 +16,23 @@
           {{ scope.row.name }}
         </template>
       </el-table-column>
+      <el-table-column align="center" label="类型">
+        <template slot-scope="scope">
+          {{ scope.row.type_label }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="归类标签">
+        <template slot-scope="scope">
+          {{ scope.row.ptag.id > 0 ? scope.row.ptag.name : '' }}
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
           <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
+          </el-button>
+          <el-button v-if="scope.row.type==0" type="primary" size="small" @click="handleMerge(scope)">
+            归类
           </el-button>
           <el-button type="danger" size="small" @click="handleDelete(scope)">
             删除
@@ -44,6 +57,39 @@
       </div>
     </el-dialog>
 
+    <el-dialog :visible.sync="dialogMergeVisible" title="归类">
+      <el-form ref="mergeForm" :model="mergeTag" label-width="160px" label-position="left">
+        <el-form-item label="归类到" prop="ptag" :rules="mergeRules">
+          <el-select
+            v-model="mergeTag.ptag"
+            value-key="id"
+            style="width:100%;"
+            filterable
+            default-first-option
+            remote
+            :loading="mergeLoading"
+            :remote-method="getMergeTags"
+            placeholder="请输入标签名"
+          >
+            <el-option
+              v-for="item in tagOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="dialogMergeVisible=false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="confirmMerge">
+          提交
+        </el-button>
+      </div>
+    </el-dialog>
+
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getTags" />
 
   </div>
@@ -51,29 +97,44 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { getTags, addTag, deleteTag, updateTag } from '@/api/tag'
+import { getTags, addTag, deleteTag, updateTag, mergeTag } from '@/api/tag'
 import Pagination from '@/components/Pagination'
 
 const defaultTag = {
-  name: ''
+  name: '',
+  ptag: {
+    id: 0
+  }
 }
 
 export default {
   name: 'TagList',
   components: { Pagination },
   data() {
+    const checkMerge = (rule, value, callback) => {
+      if (!value.id || !Number.isInteger(value.id) || value.id <= 0) {
+        return callback(new Error('请输入标签名'))
+      } else {
+        callback()
+      }
+    }
     return {
       listLoading: true,
       tag: Object.assign({}, defaultTag),
       list: [],
       dialogVisible: false,
       dialogType: 'new',
+      dialogMergeVisible: false,
+      mergeTag: Object.assign({}, defaultTag),
+      mergeLoading: false,
+      tagOptions: [],
       total: 0,
       listQuery: {
         page: 1,
         limit: 10,
         title: ''
-      }
+      },
+      mergeRules: [{ validator: checkMerge, trigger: 'blur' }]
     }
   },
   created() {
@@ -96,6 +157,16 @@ export default {
       this.total = res.meta.total
       this.listLoading = false
     },
+    async getMergeTags(query) {
+      this.mergeLoading = true
+      const res = await getTags({
+        page: 1,
+        title: query,
+        ptag: 0
+      })
+      this.tagOptions = res.data
+      this.mergeLoading = false
+    },
     handleAddTag() {
       this.tag = deepClone(defaultTag)
       this.dialogType = 'new'
@@ -105,6 +176,28 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.tag = deepClone(scope.row)
+    },
+    handleMerge(scope) {
+      this.dialogMergeVisible = true
+      this.mergeTag = deepClone(scope.row)
+    },
+    confirmMerge() {
+      this.$refs.mergeForm.validate(async(valid) => {
+        if (valid) {
+          await mergeTag(this.mergeTag.id, {
+            pid: this.mergeTag.ptag.id
+          })
+          for (let index = 0; index < this.list.length; index++) {
+            if (this.list[index].id === this.mergeTag.id) {
+              this.list.splice(index, 1, Object.assign({}, this.mergeTag))
+              break
+            }
+          }
+          this.dialogMergeVisible = false
+        } else {
+          return false
+        }
+      })
     },
     handleDelete({ $index, row }) {
       this.$confirm('确定要删除吗', '警告', {

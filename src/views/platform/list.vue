@@ -17,6 +17,12 @@
       </el-table-column>
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
+          <el-button v-if="scope.$index > 0" type="primary" size="small" @click="handleMove(scope, 'up')">
+            上移
+          </el-button>
+          <el-button v-if="scope.$index < list.length - 1" type="primary" size="small" @click="handleMove(scope, 'down')">
+            下移
+          </el-button>
           <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
           </el-button>
@@ -32,7 +38,7 @@
         <el-form-item label="名称">
           <el-input v-model="platform.name" placeholder="名称" />
         </el-form-item>
-        <el-form-item label="排序">
+        <el-form-item v-if="dialogType!=='edit'" label="排序">
           <el-input v-model="platform.order" placeholder="排序" />
         </el-form-item>
       </el-form>
@@ -50,11 +56,11 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { getPlatforms, addPlatform, deletePlatform, updatePlatform } from '@/api/platform'
+import { getPlatforms, addPlatform, deletePlatform, updatePlatform, changeOrder } from '@/api/platform'
 
 const defaultPlatform = {
   name: '',
-  order: 0
+  order: 1
 }
 
 export default {
@@ -97,12 +103,24 @@ export default {
         .then(async() => {
           await deletePlatform(row.id)
           this.list.splice($index, 1)
+          for (let index = 0; index < this.list.length; index++) {
+            if (this.list[index].order > row.order) {
+              this.list[index].order--
+            }
+          }
           this.$message({
             type: 'success',
             message: '删除成功!'
           })
         })
         .catch(err => { console.error(err) })
+    },
+    async handleMove({ $index, row }, action) {
+      this.listLoading = true
+      const moveRow = action === 'down' ? this.list[$index + 1] : this.list[$index - 1]
+      await changeOrder(row.id, moveRow.id)
+      this.getPlatforms()
+      this.listLoading = false
     },
     fields(platform) {
       return {
@@ -123,6 +141,11 @@ export default {
       } else {
         const { data } = await addPlatform(this.fields(this.platform))
         this.platform.id = data.id
+        for (let index = 0; index < this.list.length; index++) {
+          if (this.list[index].order >= this.platform.order) {
+            this.list[index].order++
+          }
+        }
         this.list.push(this.platform)
       }
       this.list.sort(function(a, b) {
