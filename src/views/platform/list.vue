@@ -7,7 +7,8 @@
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
       <el-table-column align="center" label="名称">
         <template slot-scope="scope">
-          {{ scope.row.name }}
+          <el-link v-if="scope.row.link && scope.row.link !== ''" type="primary" :href="scope.row.link" target="_blank">{{ scope.row.name }}</el-link>
+          <span v-else>{{ scope.row.name }}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="排序">
@@ -38,6 +39,9 @@
         <el-form-item label="名称">
           <el-input v-model="platform.name" placeholder="名称" />
         </el-form-item>
+        <el-form-item label="链接">
+          <el-input v-model="platform.link" placeholder="链接" />
+        </el-form-item>
         <el-form-item v-if="dialogType!=='edit'" label="排序">
           <el-input v-model="platform.order" placeholder="排序" />
         </el-form-item>
@@ -60,6 +64,7 @@ import { getPlatforms, addPlatform, deletePlatform, updatePlatform, changeOrder 
 
 const defaultPlatform = {
   name: '',
+  link: '',
   order: 1
 }
 
@@ -125,6 +130,7 @@ export default {
     fields(platform) {
       return {
         name: platform.name,
+        link: platform.link,
         order: platform.order
       }
     },
