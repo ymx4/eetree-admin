@@ -56,7 +56,7 @@
           <el-input v-model="recommend.title" placeholder="标题" />
         </el-form-item>
         <el-form-item label="分组">
-          <el-select v-model="recommend.area_id" @change="areaChanged">
+          <el-select v-model="recommend.area_id">
             <el-option
               v-for="area in areas"
               :key="area.k"
@@ -65,8 +65,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="图片">
+        <el-form-item v-if="recommend.area_id === 0" label="图片">
           <Upload v-model="recommend.cloud_id" :cloud="recommend.cloud" :validation="imageValidation" />
+        </el-form-item>
+        <el-form-item v-if="recommend.area_id === 2 || recommend.area_id === 4" label="图片">
+          <UploadCrop v-model="recommend.cloud_id" :cloud="recommend.cloud" :crop-opt="cropOpt" />
         </el-form-item>
         <el-form-item label="链接">
           <el-input v-model="recommend.link" placeholder="链接" />
@@ -101,6 +104,7 @@ import { getRecommends, addRecommend, deleteRecommend, updateRecommend } from '@
 import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
 import Upload from '@/components/Upload/SingleImage'
+import UploadCrop from '@/components/Upload/Crop'
 import GetItem from './components/GetItem'
 
 const defaultRecommend = {
@@ -118,12 +122,16 @@ const defaultRecommend = {
 
 export default {
   name: 'RecommendList',
-  components: { Pagination, Upload, GetItem },
+  components: { Pagination, Upload, UploadCrop, GetItem },
   data() {
     return {
       imageValidation: {
-        width: null,
-        height: null
+        width: 1920,
+        height: 400
+      },
+      cropOpt: {
+        width: 400,
+        height: 225
       },
       listLoading: true,
       recommend: Object.assign({}, defaultRecommend),
@@ -167,27 +175,17 @@ export default {
       const res = await getEnums('recommend.area')
       this.areas = res.data
     },
-    areaChanged(area) {
-      if (area === 0) {
-        this.imageValidation.width = 1920
-        this.imageValidation.height = 400
-      } else {
-        this.imageValidation.width = null
-      }
-    },
     handleAddRecommend() {
       this.recommend = deepClone(defaultRecommend)
       this.recommendItem = deepClone(defaultRecommend)
       this.dialogType = 'new'
       this.dialogVisible = true
-      this.areaChanged(this.recommend.area_id)
     },
     handleEdit(scope) {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.recommend = deepClone(scope.row)
       this.recommendItem = deepClone(scope.row)
-      this.areaChanged(this.recommend.area_id)
     },
     fetchItem() {
       this.recommend = deepClone(this.recommendItem)

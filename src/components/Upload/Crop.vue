@@ -18,7 +18,7 @@
       @close="close"
       @crop-upload-success="cropSuccess"
     />
-    <div class="image-preview">
+    <div class="image-preview" :style="{width:cropOpt.width + 'px',height:cropOpt.height + 'px'}">
       <div v-show="cloud.url && cloud.url.length > 1" class="image-preview-wrapper">
         <img :src="cloud.url">
         <div class="image-preview-action">
@@ -105,8 +105,6 @@ export default {
         position: relative;
         @include clearfix;
         .image-preview {
-            width: 200px;
-            height: 200px;
             margin-top: 5px;
             position: relative;
             border: 1px dashed #d9d9d9;
