@@ -56,7 +56,7 @@
           <el-input v-model="recommend.title" placeholder="标题" />
         </el-form-item>
         <el-form-item label="分组">
-          <el-select v-model="recommend.area_id">
+          <el-select v-model="recommend.area_id" @change="areaChanged">
             <el-option
               v-for="area in areas"
               :key="area.k"
@@ -66,7 +66,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="图片">
-          <Upload v-model="recommend.cloud_id" :cloud="recommend.cloud" />
+          <Upload v-model="recommend.cloud_id" :cloud="recommend.cloud" :validation="imageValidation" />
         </el-form-item>
         <el-form-item label="链接">
           <el-input v-model="recommend.link" placeholder="链接" />
@@ -121,6 +121,10 @@ export default {
   components: { Pagination, Upload, GetItem },
   data() {
     return {
+      imageValidation: {
+        width: null,
+        height: null
+      },
       listLoading: true,
       recommend: Object.assign({}, defaultRecommend),
       list: [],
@@ -163,17 +167,27 @@ export default {
       const res = await getEnums('recommend.area')
       this.areas = res.data
     },
+    areaChanged(area) {
+      if (area === 0) {
+        this.imageValidation.width = 1920
+        this.imageValidation.height = 400
+      } else {
+        this.imageValidation.width = null
+      }
+    },
     handleAddRecommend() {
       this.recommend = deepClone(defaultRecommend)
       this.recommendItem = deepClone(defaultRecommend)
       this.dialogType = 'new'
       this.dialogVisible = true
+      this.areaChanged(this.recommend.area_id)
     },
     handleEdit(scope) {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.recommend = deepClone(scope.row)
       this.recommendItem = deepClone(scope.row)
+      this.areaChanged(this.recommend.area_id)
     },
     fetchItem() {
       this.recommend = deepClone(this.recommendItem)

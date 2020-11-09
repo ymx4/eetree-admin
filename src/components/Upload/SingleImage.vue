@@ -38,6 +38,12 @@ export default {
         return { url: '' }
       }
     },
+    validation: {
+      type: Object,
+      default: function() {
+        return { width: null, height: null }
+      }
+    },
     value: {
       type: Number,
       default: 0
@@ -61,14 +67,45 @@ export default {
     beforeUpload(file) {
       const _self = this
       return new Promise((resolve, reject) => {
-        getToken().then(response => {
-          _self.dataObj.token = response.data.token
-          _self.dataObj['x:name'] = file.name
-          resolve(true)
-        }).catch(err => {
-          console.log(err)
-          reject(false)
-        })
+        if (_self.validation.width) {
+          const width = _self.validation.width
+          const height = _self.validation.height
+          const _URL = window.URL || window.webkitURL
+          const img = new Image()
+          img.onload = function() {
+            const valid = img.width === width && img.height === height
+            if (valid) {
+              getToken().then(response => {
+                _self.dataObj.token = response.data.token
+                _self.dataObj['x:name'] = file.name
+                resolve(true)
+              }).catch(err => {
+                reject(err)
+              })
+            } else {
+              reject('size')
+            }
+          }
+          img.src = _URL.createObjectURL(file)
+        } else {
+          getToken().then(response => {
+            _self.dataObj.token = response.data.token
+            _self.dataObj['x:name'] = file.name
+            resolve(true)
+          }).catch(err => {
+            reject(err)
+          })
+        }
+      }).then(() => {
+        return file
+      }, err => {
+        if (err === 'size') {
+          this.$message({
+            message: '图片尺寸必须是：' + _self.validation.width + '*' + _self.validation.height,
+            type: 'error'
+          })
+        }
+        return Promise.reject()
       })
     }
   }
