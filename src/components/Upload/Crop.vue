@@ -34,8 +34,8 @@ import { getToken } from '@/api/qiniu'
 import ImageCropper from '@/components/ImageCropper'
 
 const defaultCropOpt = {
-  width: 300,
-  height: 300,
+  width: 150,
+  height: 150,
   noCircle: true,
   url: 'https://up-z2.qiniup.com',
   storage: 'qiniu'

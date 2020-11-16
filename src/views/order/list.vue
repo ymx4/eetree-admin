@@ -11,28 +11,24 @@
       <el-table-column align="center" label="订单号">
         <template slot-scope="scope">
           {{ scope.row.order_no }}
+          <el-tag v-if="scope.row.deleted_at" size="mini" effect="dark" type="danger">已删除</el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="项目">
+      <el-table-column align="center" label="用户">
         <template slot-scope="scope">
-          <el-link type="primary" :href="scope.row.orderItems[0].project_goods.project.url" target="_blank">
-            {{ scope.row.orderItems[0].project_goods.project.title }}
-          </el-link>
+          <show-user v-model="scope.row.user" />
         </template>
       </el-table-column>
       <el-table-column align="center" label="商品">
         <template slot-scope="scope">
-          {{ scope.row.orderItems[0].project_goods.name }}
+          <el-link type="primary" :href="scope.row.orderItems[0].project_goods.project.url" target="_blank">
+            {{ scope.row.orderItems[0].project_goods.project.title }}
+          </el-link> >> {{ scope.row.orderItems[0].project_goods.name }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="总金额">
         <template slot-scope="scope">
           {{ scope.row.price }}
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="数量">
-        <template slot-scope="scope">
-          {{ scope.row.orderItems[0].quantity }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="状态">
@@ -50,10 +46,11 @@
 <script>
 import { getOrders } from '@/api/order'
 import Pagination from '@/components/Pagination'
+import ShowUser from '../user/components/Show'
 
 export default {
   name: 'OrderList',
-  components: { Pagination },
+  components: { Pagination, ShowUser },
   data() {
     return {
       listLoading: true,

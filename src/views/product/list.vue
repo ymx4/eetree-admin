@@ -138,8 +138,8 @@ export default {
         searchType: 'all'
       },
       cropOpt: {
-        width: 300,
-        height: 300
+        width: 150,
+        height: 150
       }
     }
   },

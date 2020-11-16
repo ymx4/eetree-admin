@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-select v-model="typeId" @change="typeChange">
+    <el-select v-model="value.obj_type" @change="typeChange">
       <el-option label="请选择" :value="-1" />
       <el-option
         v-for="type in types"
@@ -49,15 +49,12 @@ export default {
     return {
       loading: false,
       types: {},
-      typeId: null,
       list: [],
       recId: null
     }
   },
   created() {
-    this.getTypes().then(ret => {
-      this.typeId = this.value.obj_type
-    })
+    this.getTypes()
   },
   methods: {
     async getTypes() {
@@ -114,15 +111,14 @@ export default {
     },
     typeChange() {
       this.list = []
-      if (this.typeId === -1) {
-        this.value.obj_type = -1
+      if (this.value.obj_type === -1) {
         this.value.obj_id = 0
       }
     },
     async remoteMethod(query) {
       this.list = []
       if (query !== '') {
-        if (this.typeId === this.types.DOC.k) {
+        if (this.value.obj_type === this.types.DOC.k) {
           this.loading = true
           const res = await getDocs({
             title: query,
@@ -133,7 +129,7 @@ export default {
             this.list.push(this.formatDoc(row))
           })
           this.loading = false
-        } else if (this.typeId === this.types.PROJECT.k) {
+        } else if (this.value.obj_type === this.types.PROJECT.k) {
           this.loading = true
           const res = await getProjects({
             title: query,

@@ -37,6 +37,12 @@
       </el-table-column>
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
+          <el-button v-if="listQuery.area_id !== '-1' && scope.$index > 0" type="primary" size="small" @click="handleMove(scope, 'up')">
+            上移
+          </el-button>
+          <el-button v-if="listQuery.area_id !== '-1' && scope.$index < list.length - 1" type="primary" size="small" @click="handleMove(scope, 'down')">
+            下移
+          </el-button>
           <el-button type="primary" size="small" @click="handleEdit(scope)">
             编辑
           </el-button>
@@ -51,6 +57,9 @@
       <el-form :model="recommend" label-width="160px" label-position="left">
         <el-form-item label="内容类型">
           <get-item v-if="dialogVisible" v-model="recommendItem" @fetchItem="fetchItem" />
+        </el-form-item>
+        <el-form-item label="内容ID（自动）">
+          <el-input v-model="recommend.obj_id" placeholder="内容ID" />
         </el-form-item>
         <el-form-item label="标题">
           <el-input v-model="recommend.title" placeholder="标题" />
@@ -100,7 +109,8 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { getRecommends, addRecommend, deleteRecommend, updateRecommend } from '@/api/recommend'
+import enums from '@/utils/enums'
+import { getRecommends, addRecommend, deleteRecommend, updateRecommend, changeOrder } from '@/api/recommend'
 import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
 import Upload from '@/components/Upload/SingleImage'
@@ -175,6 +185,13 @@ export default {
       const res = await getEnums('recommend.area')
       this.areas = res.data
     },
+    async handleMove({ $index, row }, action) {
+      this.listLoading = true
+      const moveRow = action === 'down' ? this.list[$index + 1] : this.list[$index - 1]
+      await changeOrder(row.id, moveRow.id)
+      this.getRecommends()
+      this.listLoading = false
+    },
     handleAddRecommend() {
       this.recommend = deepClone(defaultRecommend)
       this.recommendItem = deepClone(defaultRecommend)
@@ -189,6 +206,13 @@ export default {
     },
     fetchItem() {
       this.recommend = deepClone(this.recommendItem)
+      if (this.dialogType === 'new') {
+        if (this.recommend.obj_type === enums.types.DOC) {
+          this.recommend.area_id = enums.recommend.area.HOME_DOC
+        } else if (this.recommend.obj_type === enums.types.PROJECT) {
+          this.recommend.area_id = enums.recommend.area.HOME_PROJECT
+        }
+      }
     },
     handleDelete({ $index, row }) {
       this.$confirm('确定要删除吗', '警告', {

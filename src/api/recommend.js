@@ -30,3 +30,12 @@ export function deleteRecommend(id) {
     method: 'delete'
   })
 }
+
+export function changeOrder(id, moveId) {
+  const data = { move_id: moveId }
+  return request({
+    url: '/recommends/' + id,
+    method: 'put',
+    data
+  })
+}
