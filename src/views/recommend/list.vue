@@ -80,6 +80,9 @@
         <el-form-item v-if="recommend.area_id === 2 || recommend.area_id === 4" label="图片">
           <UploadCrop v-model="recommend.cloud_id" :cloud="recommend.cloud" :crop-opt="cropOpt" />
         </el-form-item>
+        <el-form-item v-if="recommend.area_id === 3 && recommend.order === 1" label="图片">
+          <UploadCrop v-model="recommend.cloud_id" :cloud="recommend.cloud" :crop-opt="wikiCropOpt" />
+        </el-form-item>
         <el-form-item label="链接">
           <el-input v-model="recommend.link" placeholder="链接" />
         </el-form-item>
@@ -142,6 +145,10 @@ export default {
       cropOpt: {
         width: 400,
         height: 225
+      },
+      wikiCropOpt: {
+        width: 360,
+        height: 500
       },
       listLoading: true,
       recommend: Object.assign({}, defaultRecommend),
@@ -252,6 +259,9 @@ export default {
           }
         }
       } else {
+        if (this.recommend.area_id === 3) {
+          this.recommend.order = 2
+        }
         const { data } = await addRecommend(this.fields(this.recommend))
         this.recommend = data
         this.list.push(this.recommend)
