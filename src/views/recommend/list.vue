@@ -190,7 +190,6 @@ export default {
       const moveRow = action === 'down' ? this.list[$index + 1] : this.list[$index - 1]
       await changeOrder(row.id, moveRow.id)
       this.getRecommends()
-      this.listLoading = false
     },
     handleAddRecommend() {
       this.recommend = deepClone(defaultRecommend)

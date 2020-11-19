@@ -125,7 +125,6 @@ export default {
       const moveRow = action === 'down' ? this.list[$index + 1] : this.list[$index - 1]
       await changeOrder(row.id, moveRow.id)
       this.getPlatforms()
-      this.listLoading = false
     },
     fields(platform) {
       return {

@@ -2,6 +2,15 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.q" placeholder="昵称" style="width: 200px;" class="filter-item" />
+      <el-select v-model="listQuery.searchType" style="width: 140px" class="filter-item" @change="handleFilter">
+        <el-option label="所有类型" value="all" />
+        <el-option
+          v-for="userType in userTypes"
+          :key="userType.k"
+          :label="userType.l"
+          :value="userType.k"
+        />
+      </el-select>
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
@@ -114,7 +123,8 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
-        q: ''
+        q: '',
+        searchType: 'all'
       },
       userTypes: []
     }
@@ -132,7 +142,8 @@ export default {
       this.listLoading = true
       const res = await getUsers({
         page: this.listQuery.page,
-        q: this.listQuery.q
+        q: this.listQuery.q,
+        sType: this.listQuery.searchType
       })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
