@@ -46,6 +46,16 @@
         <el-form-item label="名称">
           <el-input v-model="tag.name" placeholder="名称" />
         </el-form-item>
+        <el-form-item label="类型">
+          <el-select v-model="tag.type">
+            <el-option
+              v-for="tagType in tagTypes"
+              :key="tagType.k"
+              :label="tagType.l"
+              :value="tagType.k"
+            />
+          </el-select>
+        </el-form-item>
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">
@@ -98,6 +108,7 @@
 <script>
 import { deepClone } from '@/utils'
 import { getTags, addTag, deleteTag, updateTag, mergeTag } from '@/api/tag'
+import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
 
 const defaultTag = {
@@ -122,6 +133,7 @@ export default {
       listLoading: true,
       tag: Object.assign({}, defaultTag),
       list: [],
+      tagTypes: [],
       dialogVisible: false,
       dialogType: 'new',
       dialogMergeVisible: false,
@@ -138,12 +150,17 @@ export default {
     }
   },
   created() {
+    this.getTagTypes()
     this.getTags()
   },
   methods: {
     handleFilter() {
       this.listQuery.page = 1
       this.getTags()
+    },
+    async getTagTypes() {
+      const res = await getEnums('tag.types')
+      this.tagTypes = res.data
     },
     async getTags() {
       this.listLoading = true
@@ -217,13 +234,15 @@ export default {
     },
     fields(tag) {
       return {
-        name: tag.name
+        name: tag.name,
+        type: tag.type
       }
     },
     async confirmSubmit() {
       const isEdit = this.dialogType === 'edit'
       if (isEdit) {
-        await updateTag(this.tag.id, this.fields(this.tag))
+        const { data } = await updateTag(this.tag.id, this.fields(this.tag))
+        this.tag = data
         for (let index = 0; index < this.list.length; index++) {
           if (this.list[index].id === this.tag.id) {
             this.list.splice(index, 1, Object.assign({}, this.tag))
@@ -232,7 +251,7 @@ export default {
         }
       } else {
         const { data } = await addTag(this.fields(this.tag))
-        this.tag.id = data.id
+        this.tag = data
         this.list.push(this.tag)
       }
 
