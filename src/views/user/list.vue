@@ -20,6 +20,11 @@
     </div>
 
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
+      <el-table-column align="center" label="头像">
+        <template slot-scope="scope">
+          <img style="max-width:100px;" :src="scope.row.avatar">
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="用户名">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.is_admin">{{ scope.row.user_type_label }}</el-tag>
@@ -36,9 +41,9 @@
           {{ scope.row.mobile }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="头像">
+      <el-table-column align="center" label="总收入">
         <template slot-scope="scope">
-          <img style="max-width:100px;" :src="scope.row.avatar">
+          {{ scope.row.revenue }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="创建时间">

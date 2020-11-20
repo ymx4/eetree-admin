@@ -259,10 +259,13 @@ export default {
           }
         }
       } else {
+        const saveRecommend = this.fields(this.recommend)
         if (this.recommend.area_id === 3) {
-          this.recommend.order = 2
+          saveRecommend.order = 2
+        } else {
+          saveRecommend.order = 1
         }
-        const { data } = await addRecommend(this.fields(this.recommend))
+        const { data } = await addRecommend(saveRecommend)
         this.recommend = data
         this.list.push(this.recommend)
       }
