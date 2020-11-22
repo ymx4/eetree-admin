@@ -3,6 +3,10 @@
     <div class="filter-container">
       <el-input v-model="listQuery.projectTitle" placeholder="项目名" style="width: 200px;" class="filter-item" />
       <el-input v-model="listQuery.name" placeholder="商品名" style="width: 200px;" class="filter-item" />
+      <el-select v-model="listQuery.promote" style="width: 140px" class="filter-item" @change="handleFilter">
+        <el-option label="所有" value="all" />
+        <el-option label="推广中" value="1" />
+      </el-select>
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
@@ -33,6 +37,16 @@
           {{ scope.row.created_at }}
         </template>
       </el-table-column>
+      <el-table-column align="center" label="操作">
+        <template slot-scope="scope">
+          <el-button v-if="scope.row.promote === 0" type="primary" size="small" @click="handlePromote(scope, 1)">
+            推广
+          </el-button>
+          <el-button v-if="scope.row.promote === 1" type="warning" size="small" @click="handlePromote(scope, 0)">
+            取消推广
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getGoods" />
@@ -41,7 +55,7 @@
 </template>
 
 <script>
-import { getGoods } from '@/api/goods'
+import { getGoods, updateGoods } from '@/api/goods'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -56,7 +70,8 @@ export default {
         page: 1,
         limit: 10,
         name: '',
-        projectTitle: ''
+        projectTitle: '',
+        promote: 'all'
       }
     }
   },
@@ -73,13 +88,27 @@ export default {
       const res = await getGoods({
         page: this.listQuery.page,
         name: this.listQuery.name,
-        projectTitle: this.listQuery.projectTitle
+        projectTitle: this.listQuery.projectTitle,
+        promote: this.listQuery.promote
       })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
       this.total = res.meta.total
       this.listLoading = false
+    },
+    async handlePromote(scope, promote) {
+      await updateGoods(scope.row.id, { promote })
+      for (let index = 0; index < this.list.length; index++) {
+        if (this.list[index].id === scope.row.id) {
+          this.list[index].promote = promote
+          break
+        }
+      }
+      this.$message({
+        type: 'success',
+        message: '操作成功!'
+      })
     }
   }
 }

@@ -8,6 +8,14 @@ export function getGoods(query) {
   })
 }
 
+export function updateGoods(id, data) {
+  return request({
+    url: '/project-goods/' + id,
+    method: 'put',
+    data
+  })
+}
+
 export function getGoodsTrials(query) {
   return request({
     url: '/goods-trials',
