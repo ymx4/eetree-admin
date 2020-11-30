@@ -16,7 +16,7 @@
       </el-table-column>
       <el-table-column align="center" label="用户">
         <template slot-scope="scope">
-          <show-user v-model="scope.row.user" />
+          <show-user v-model="scope.row.user" :address="scope.row.address" />
         </template>
       </el-table-column>
       <el-table-column align="center" label="商品">
