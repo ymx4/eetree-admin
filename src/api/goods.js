@@ -8,14 +8,6 @@ export function getGoods(query) {
   })
 }
 
-export function updateGoods(id, data) {
-  return request({
-    url: '/project-goods/' + id,
-    method: 'put',
-    data
-  })
-}
-
 export function getGoodsTrials(query) {
   return request({
     url: '/goods-trials',
@@ -37,5 +29,20 @@ export function reviewTrial(id, data) {
     url: '/goods-trials/' + id + '/review',
     method: 'put',
     data
+  })
+}
+
+export function goodsPromote(id, data) {
+  return request({
+    url: '/project-goods/' + id + '/promote',
+    method: 'put',
+    data
+  })
+}
+
+export function goodsUnPromote(id) {
+  return request({
+    url: '/project-goods/' + id + '/unpromote',
+    method: 'put'
   })
 }
