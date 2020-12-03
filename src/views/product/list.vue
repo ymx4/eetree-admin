@@ -194,6 +194,17 @@ export default {
       this.getSuppliers()
       this.product = deepClone(scope.row)
       this.dialogVisible = true
+      if (this.product.supplier) {
+        let supplierExist = false
+        this.suppliers.forEach(supplier => {
+          if (supplier.id === this.product.supplier.id) {
+            supplierExist = true
+          }
+        })
+        if (!supplierExist) {
+          this.suppliers.unshift(this.product.supplier)
+        }
+      }
     },
     handleDelete({ $index, row }) {
       this.$confirm('确定要删除吗', '警告', {
