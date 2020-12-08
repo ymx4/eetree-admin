@@ -19,6 +19,10 @@ import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
 
+import FormMaker from 'xy-form-maker'
+import 'xy-form-maker/lib/form-maker.css'
+Vue.component('FormMaker', FormMaker)
+
 /**
  * If you don't want to use mock-server
  * you want to use mockjs for request interception

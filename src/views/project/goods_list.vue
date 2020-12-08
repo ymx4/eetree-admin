@@ -55,6 +55,9 @@
           <el-button v-else type="primary" size="small" @click="handlePromote(scope)">
             推广
           </el-button>
+          <el-button type="primary" size="small" @click="handleXform(scope)">
+            绑定表单
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -87,6 +90,29 @@
       </div>
     </el-dialog>
 
+    <el-dialog :visible.sync="xformVisible" title="绑定表单">
+      <el-form ref="xformForm" :model="goods.xform" label-width="80px" label-position="left">
+        <el-form-item label="表单">
+          <el-select v-model="goods.xform.id" filterable :filter-method="getXforms">
+            <el-option
+              v-for="xform in xforms"
+              :key="xform.id"
+              :label="xform.name"
+              :value="xform.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="xformVisible=false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="confirmXform">
+          提交
+        </el-button>
+      </div>
+    </el-dialog>
+
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getGoods" />
 
   </div>
@@ -94,7 +120,8 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { getGoods, goodsPromote, goodsUnPromote } from '@/api/goods'
+import { getGoods, updateGoods, goodsPromote, goodsUnPromote } from '@/api/goods'
+import { getXforms } from '@/api/xform'
 import Pagination from '@/components/Pagination'
 
 const defaultPromote = {
@@ -109,6 +136,7 @@ export default {
   data() {
     return {
       listLoading: true,
+      xformReset: true,
       list: [],
       total: 0,
       listQuery: {
@@ -120,7 +148,13 @@ export default {
       },
       promoteVisible: false,
       promoteId: 0,
-      goodsPromote: Object.assign({}, defaultPromote)
+      goodsPromote: Object.assign({}, defaultPromote),
+      xformVisible: false,
+      goods: {
+        xform: { id: 0, name: '无' }
+      },
+      xforms: [],
+      xformLoading: false
     }
   },
   created() {
@@ -177,6 +211,46 @@ export default {
         message: '操作成功!'
       })
       this.promoteVisible = false
+    },
+    async getXforms(title) {
+      if (!title && !this.xformReset) {
+        return
+      }
+      const res = await getXforms({ title })
+      this.xforms = res.data
+      if (title) {
+        this.xformReset = true
+      } else {
+        this.xformReset = false
+        this.xforms.unshift({ id: 0, name: '无' })
+      }
+    },
+    async handleXform(scope) {
+      this.goods = scope.row
+      if (!this.goods.xform) {
+        this.goods.xform = { id: 0, name: '无' }
+      }
+      this.getXforms()
+      if (this.goods.xform) {
+        let xformExist = false
+        this.xforms.forEach(xform => {
+          if (xform.id === this.goods.xform.id) {
+            xformExist = true
+          }
+        })
+        if (!xformExist) {
+          this.xforms.unshift(this.goods.xform)
+        }
+      }
+      this.xformVisible = true
+    },
+    async confirmXform() {
+      await updateGoods(this.goods.id, { xform_id: this.goods.xform.id })
+      this.$message({
+        type: 'success',
+        message: '操作成功!'
+      })
+      this.xformVisible = false
     }
   }
 }

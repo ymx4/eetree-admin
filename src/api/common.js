@@ -7,3 +7,10 @@ export function getEnums(key, t = '') {
     params: { term: key, t }
   })
 }
+
+export function secret() {
+  return request({
+    url: '/common/secret',
+    method: 'get'
+  })
+}

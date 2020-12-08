@@ -6,6 +6,7 @@ const state = {
   token: getToken(),
   name: '',
   avatar: '',
+  is_super: false,
   menus: []
 }
 
@@ -21,6 +22,9 @@ const mutations = {
   },
   SET_MENUS: (state, menus) => {
     state.menus = menus
+  },
+  SET_ROLE: (state, user) => {
+    state.is_super = user.is_super
   }
 }
 
@@ -61,6 +65,7 @@ const actions = {
         commit('SET_MENUS', menus)
         commit('SET_NAME', name)
         commit('SET_AVATAR', avatar)
+        commit('SET_ROLE', data)
         resolve(data)
       }).catch(error => {
         reject(error)

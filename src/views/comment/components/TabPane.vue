@@ -78,7 +78,11 @@ export default {
     },
     async toggleActive(scope) {
       const res = await toggleActive(scope.row.id)
-      scope.row.active = res.data.active
+      this.list.forEach(element => {
+        if (element.id === scope.row.id) {
+          element.active = res.data.active
+        }
+      })
       this.$message({
         type: 'success',
         message: '操作成功!'

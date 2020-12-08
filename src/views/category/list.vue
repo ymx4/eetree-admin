@@ -67,10 +67,10 @@
         <el-form-item label="目标分类" prop="id" :rules="[{ required: true, message: '不能为空'},]">
           <el-select v-model="moveDocDest.id" placeholder="请选择">
             <el-option
-              v-for="category in moveDocCategories"
-              :key="category.value"
-              :label="category.label"
-              :value="category.value"
+              v-for="categoryRow in moveDocCategories"
+              :key="categoryRow.value"
+              :label="categoryRow.label"
+              :value="categoryRow.value"
             />
           </el-select>
         </el-form-item>
