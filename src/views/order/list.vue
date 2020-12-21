@@ -2,6 +2,15 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.orderNo" placeholder="订单号" style="width: 200px;" class="filter-item" />
+      <el-select v-model="listQuery.status" style="width: 140px" class="filter-item" @change="handleFilter">
+        <el-option label="所有类型" value="all" />
+        <el-option
+          v-for="statusOpt in statusOpts"
+          :key="statusOpt.k"
+          :label="statusOpt.l"
+          :value="statusOpt.k"
+        />
+      </el-select>
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
@@ -47,6 +56,7 @@
 import { getOrders } from '@/api/order'
 import Pagination from '@/components/Pagination'
 import ShowUser from '../user/components/Show'
+import { getEnums } from '@/api/common'
 
 export default {
   name: 'OrderList',
@@ -59,12 +69,15 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
-        orderNo: ''
-      }
+        orderNo: '',
+        status: 'all'
+      },
+      statusOpts: []
     }
   },
   created() {
     this.getOrders()
+    this.getStatusOpts()
   },
   methods: {
     handleFilter() {
@@ -75,13 +88,22 @@ export default {
       this.listLoading = true
       const res = await getOrders({
         page: this.listQuery.page,
-        orderNo: this.listQuery.orderNo
+        orderNo: this.listQuery.orderNo,
+        status: this.listQuery.status
       })
       this.list = res.data
       this.listQuery.page = res.meta.current_page
       this.listQuery.limit = res.meta.per_page
       this.total = res.meta.total
       this.listLoading = false
+    },
+    async getStatusOpts() {
+      const res = await getEnums('order.status')
+      res.data.forEach(element => {
+        if (element.k !== 0) {
+          this.statusOpts.push(element)
+        }
+      })
     }
   }
 }
