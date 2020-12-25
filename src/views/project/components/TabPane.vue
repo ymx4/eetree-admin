@@ -46,6 +46,25 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item v-if="dialogType==='pass'" label="关联项目" prop="pid">
+          <el-select
+            v-model="projectDraft.project.pid"
+            filterable
+            remote
+            placeholder="请选择"
+            :remote-method="getProjects"
+            :loading="pidLoading"
+          >
+            <el-option label="请选择" :value="0" />
+            <el-option
+              v-for="pItem in projects"
+              :key="pItem.id"
+              :label="pItem.title"
+              :value="pItem.id"
+            />
+          </el-select>
+          <span class="el-upload__tip">仅出现在关联项目的案例中，不会出现在全局项目列表中</span>
+        </el-form-item>
         <el-form-item v-if="dialogType==='refuse'" label="拒绝原因" prop="review_remarks" :rules="[{ required: true, message: '不能为空'},]">
           <el-input
             v-model="projectDraft.review_remarks"
@@ -71,7 +90,7 @@
 </template>
 
 <script>
-import { getDrafts, reviewProject, publishPreview } from '@/api/project'
+import { getDrafts, reviewProject, publishPreview, getProjects } from '@/api/project'
 import { getPlatforms } from '@/api/platform'
 import { getEnums } from '@/api/common'
 import Pagination from '@/components/Pagination'
@@ -91,7 +110,10 @@ export default {
       listLoading: true,
       platforms: [],
       projectDraft: {
-        platform_id: []
+        platform_id: [],
+        project: {
+          pid: 0
+        }
       },
       commonStatus: {},
       list: [],
@@ -104,7 +126,9 @@ export default {
       },
       previewVisable: false,
       previewUrl: '',
-      previewHeight: 0
+      previewHeight: 0,
+      projects: [],
+      pidLoading: false
     }
   },
   created() {
@@ -147,6 +171,7 @@ export default {
       this.dialogType = 'pass'
       this.projectDraft = deepClone(scope.row)
       this.dialogVisible = true
+      this.projects = []
       this.$nextTick(function() {
         this.$refs.reviewForm.clearValidate()
       })
@@ -169,9 +194,30 @@ export default {
         }
       })
     },
+    async getProjects(query) {
+      this.projects = []
+      if (query !== '') {
+        this.pidLoading = true
+        const res = await getProjects({
+          title: query,
+          publish: 1,
+          simple: 1
+        })
+        res.data.forEach(element => {
+          if (element.id !== this.projectDraft.project_id) {
+            this.projects.push(element)
+          }
+        })
+        this.pidLoading = false
+      }
+    },
     async doReview() {
       if (this.dialogType === 'pass') {
-        await reviewProject(this.projectDraft.id, { status: this.commonStatus.PASS.k, platform_id: this.projectDraft.platform_id })
+        await reviewProject(this.projectDraft.id, {
+          status: this.commonStatus.PASS.k,
+          platform_id: this.projectDraft.platform_id,
+          pid: this.projectDraft.project.pid
+        })
       } else {
         await reviewProject(this.projectDraft.id, { status: this.commonStatus.REFUSE.k, review_remarks: this.projectDraft.review_remarks })
       }
