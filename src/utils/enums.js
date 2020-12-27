@@ -12,5 +12,10 @@ export default {
       HOME_COURSE: 4,
       HOT_TAG: 5
     }
+  },
+  project: {
+    type: {
+      ACTIVITY: 2
+    }
   }
 }

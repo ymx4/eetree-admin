@@ -46,7 +46,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="dialogType==='pass'" label="关联项目" prop="pid">
+        <el-form-item v-if="dialogType==='pass'" label="关联活动" prop="pid">
           <el-select
             v-model="projectDraft.project.pid"
             filterable
@@ -63,7 +63,7 @@
               :value="pItem.id"
             />
           </el-select>
-          <span class="el-upload__tip">仅出现在关联项目的案例中，不会出现在全局项目列表中</span>
+          <span class="el-upload__tip">仅出现在关联活动的案例中，不会出现在全局项目列表中</span>
         </el-form-item>
         <el-form-item v-if="dialogType==='refuse'" label="拒绝原因" prop="review_remarks" :rules="[{ required: true, message: '不能为空'},]">
           <el-input
@@ -93,6 +93,7 @@
 import { getDrafts, reviewProject, publishPreview, getProjects } from '@/api/project'
 import { getPlatforms } from '@/api/platform'
 import { getEnums } from '@/api/common'
+import enums from '@/utils/enums'
 import Pagination from '@/components/Pagination'
 import { deepClone } from '@/utils'
 
@@ -201,7 +202,8 @@ export default {
         const res = await getProjects({
           title: query,
           publish: 1,
-          simple: 1
+          simple: 1,
+          type: enums.project.type.ACTIVITY
         })
         res.data.forEach(element => {
           if (element.id !== this.projectDraft.project_id) {
