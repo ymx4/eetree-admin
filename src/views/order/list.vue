@@ -19,7 +19,7 @@
     <el-table v-loading="listLoading" :data="list" style="width: 100%;margin-top:30px;" border>
       <el-table-column align="center" label="订单号">
         <template slot-scope="scope">
-          {{ scope.row.order_no }}
+          {{ scope.row.order_no }}<template v-if="scope.row.paylog"><br>商户单号：{{ scope.row.paylog.out_trade_no }}</template>
           <el-tag v-if="scope.row.deleted_at" size="mini" effect="dark" type="danger">已删除</el-tag>
         </template>
       </el-table-column>
